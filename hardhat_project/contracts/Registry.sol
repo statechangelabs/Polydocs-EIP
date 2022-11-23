@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 contract Registry {
     mapping(uint256 => string) public templates;
     mapping(string => mapping(uint256 => string)) public terms;
+    // address of the user who has accepted terms for a certain agreementID (uint256)
     mapping(address => mapping(uint256 => bool)) hasAcceptedTerms;
     mapping(uint256 => string) public renderers;
     mapping(uint256 => uint256) public lastTermChange;
@@ -22,8 +23,8 @@ contract Registry {
 
     event AcceptedTerms(
         address indexed user,
-        uint256 indexed tokenId,
-        string terms
+        uint256 indexed templateId,
+        string uri
     );
 
     // mapping()
