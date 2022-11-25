@@ -28,6 +28,30 @@ contract Registry is Ownable {
         uint256 indexed templateId,
         string uri
     );
+    /// @notice This event is emitted when the global renderer is updated.
+    /// @dev This event is emitted when the global renderer is updated.
+    /// @param _renderer The new renderer.
+    event GlobalRendererChanged(string indexed _renderer);
+
+    /// @notice Event emitted when a new token term is added.
+    /// @dev Event emitted when a new token term is added.
+    /// @param _term The term being added to the contract.
+    /// @param _templateId The token id of the token for which the term is being added.
+    /// @param _value The value of the term being added to the contract.
+    event TermChanged(
+        string indexed _term,
+        uint256 indexed _templateId,
+        string _value
+    );
+
+    /// @notice This event is emitted when the global template is updated.
+    /// @dev This event is emitted when the global template is updated.
+    /// @param _template The new template.
+    /// @param _templateId The token id of the token for which the template is being updated.
+    event TemplateChanged(
+        uint256 indexed _templateId,
+        string indexed _template
+    );
 
     // change to internal later
     function hashKeyId(string memory key, uint256 templateId)
@@ -64,46 +88,48 @@ contract Registry is Ownable {
         return hasAcceptedTerms[hash];
     }
 
-    function acceptTerms(uint256 tokenId, string memory newtermsUrl) external {
-        _acceptTerms(tokenId, newtermsUrl);
+    function acceptTerms(uint256 tokenId, string memory newTemplateUrl)
+        external
+    {
+        _acceptTerms(tokenId, newTemplateUrl);
     }
 
-    function _acceptTerms(uint256 _templateId, string memory _newtermsUrl)
+    function _acceptTerms(uint256 _templateId, string memory _newtemplateUrl)
         internal
         virtual
     {
         require(
-            keccak256(bytes(_newtermsUrl)) ==
-                keccak256(bytes(_termsUrl(_templateId))),
+            keccak256(bytes(_newtemplateUrl)) ==
+                keccak256(bytes(_templateUrl(_templateId))),
             "Terms Url does not match"
         );
         bytes32 hash = hashAddressId(msg.sender, _templateId);
         hasAcceptedTerms[hash] = true;
-        emit AcceptedTerms(msg.sender, _templateId, _termsUrl(_templateId));
+        emit AcceptedTerms(msg.sender, _templateId, _templateUrl(_templateId));
     }
 
-    function termsUrl(uint256 templateId)
+    function templateUrl(uint256 templateId)
         external
         view
         returns (string memory)
     {
-        return _termsUrlWithPrefix(templateId, "ipfs://");
+        return _templateUrlWithPrefix(templateId, "ipfs://");
     }
 
-    function _termsUrl(uint256 templateId)
+    function _templateUrl(uint256 templateId)
         internal
         view
         returns (string memory)
     {
-        return _termsUrlWithPrefix(templateId, "ipfs://");
+        return _templateUrlWithPrefix(templateId, "ipfs://");
     }
 
-    function _termsUrlWithPrefix(uint256 templateId, string memory prefix)
+    function _templateUrlWithPrefix(uint256 templateId, string memory prefix)
         internal
         view
-        returns (string memory _termsURL)
+        returns (string memory _templateUrl)
     {
-        _termsURL = string(
+        _templateUrl = string(
             abi.encodePacked(
                 prefix,
                 _renderer(templateId),
@@ -121,12 +147,12 @@ contract Registry is Ownable {
         );
     }
 
-    function termsUrlWithPrefix(uint256 tokenId, string memory prefix)
+    function templateUrlWithPrefix(uint256 tokenId, string memory prefix)
         public
         view
         returns (string memory)
     {
-        return _termsUrlWithPrefix(tokenId, prefix);
+        return _templateUrlWithPrefix(tokenId, prefix);
     }
 
     function _renderer(uint256 _tokenId) internal view returns (string memory) {
@@ -156,6 +182,7 @@ contract Registry is Ownable {
         onlyTemplateOwner(_templateId)
     {
         templates[_templateId] = _newTemplate;
+        emit TemplateChanged(_templateId, _newTemplate);
     }
 
     function setTerm(
@@ -165,6 +192,7 @@ contract Registry is Ownable {
     ) external onlyTemplateOwner(_templateId) {
         bytes32 hash = hashKeyId(_key, _templateId);
         terms[hash] = _value;
+        emit TermChanged(_key, _templateId, _value);
     }
 
     modifier onlyTemplateOwner(uint256 _templateId) {
