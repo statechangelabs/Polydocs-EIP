@@ -5,9 +5,13 @@ pragma solidity ^0.8.9;
 // import "hardhat/console.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
 
 contract Registry is Ownable {
     // string[] public templates;
+    using Counters for Counters.Counter;
+    Counters.Counter private ids;
+
     mapping(uint256 => string) public templates;
     // mapping(string => mapping(uint256 => string)) public terms;
     // maps hashAddressId to boolean
@@ -127,9 +131,9 @@ contract Registry is Ownable {
     function _templateUrlWithPrefix(uint256 templateId, string memory prefix)
         internal
         view
-        returns (string memory _templateUrl)
+        returns (string memory _templateUri)
     {
-        _templateUrl = string(
+        _templateUri = string(
             abi.encodePacked(
                 prefix,
                 _renderer(templateId),
@@ -203,5 +207,14 @@ contract Registry is Ownable {
         _;
     }
 
-    // function
+    function mintTemplate(string memory _templateUri)
+        external
+        returns (uint256)
+    {
+        uint256 templateId = ids.current();
+        templates[templateId] = _templateUri;
+        templateOwners[templateId] = msg.sender;
+        ids.increment();
+        return templateId;
+    }
 }
