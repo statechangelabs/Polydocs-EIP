@@ -2,10 +2,11 @@
 pragma solidity ^0.8.9;
 
 // Uncomment this line to use console.log
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 contract Registry is Ownable {
     // string[] public templates;
@@ -20,16 +21,21 @@ contract Registry is Ownable {
     mapping(uint256 => uint256) public lastTermChange;
     // mapping of hash of key and template token ID to the value
     mapping(bytes32 => string) public terms;
-    mapping(uint256 => address) public templateOwners;
+    mapping(uint256 => address) public _templateOwners;
+
+    /// @notice Returns whether the address is allowed to accept terms on behalf of the signer.
+    /// @dev This function returns whether the address is allowed to accept terms on behalf of the signer.
+    mapping(address => bool) private _metaSigners;
     // address[] owners;
 
     /// @notice The default value of the global renderer.
     /// @dev The default value of the global renderer.
-    string _globalRenderer = "";
+    string _globalRenderer =
+        "bafybeig44fabnqp66umyilergxl6bzwno3ntill3yo2gtzzmyhochbchhy";
 
     event AcceptedTerms(
-        address indexed user,
         uint256 indexed templateId,
+        address indexed user,
         string uri
     );
     /// @notice This event is emitted when the global renderer is updated.
@@ -42,19 +48,18 @@ contract Registry is Ownable {
     /// @param _term The term being added to the contract.
     /// @param _templateId The token id of the token for which the term is being added.
     /// @param _value The value of the term being added to the contract.
-    event TermChanged(
-        string indexed _term,
-        uint256 indexed _templateId,
-        string _value
-    );
+    event TermChanged(uint256 indexed _templateId, string _term, string _value);
 
     /// @notice This event is emitted when the global template is updated.
     /// @dev This event is emitted when the global template is updated.
     /// @param _template The new template.
     /// @param _templateId The token id of the token for which the template is being updated.
-    event TemplateChanged(
+    event TemplateChanged(uint256 indexed _templateId, string _template);
+
+    event TemplateCreated(
         uint256 indexed _templateId,
-        string indexed _template
+        string _template,
+        address _owner
     );
 
     // change to internal later
@@ -63,7 +68,11 @@ contract Registry is Ownable {
         pure
         returns (bytes32)
     {
-        return keccak256(abi.encodePacked(templateId, key));
+        bytes32 hash = keccak256(abi.encodePacked(templateId, key));
+        // console.log("Inside HashKeyId");
+        // console.logBytes32(hash);
+        // console.log("key:", key);
+        return hash;
     }
 
     // change to internal later
@@ -75,27 +84,27 @@ contract Registry is Ownable {
         return keccak256(abi.encodePacked(user, templateId));
     }
 
-    function acceptedTerms(address to, uint256 tokenId)
+    function acceptedTerms(address _signer, uint256 _templateId)
         external
         view
         returns (bool)
     {
-        return _acceptedTerms(to, tokenId);
+        return _acceptedTerms(_signer, _templateId);
     }
 
-    function _acceptedTerms(address to, uint256 templateId)
+    function _acceptedTerms(address _signer, uint256 _templateId)
         internal
         view
         returns (bool)
     {
-        bytes32 hash = hashAddressId(to, templateId);
+        bytes32 hash = hashAddressId(_signer, _templateId);
         return hasAcceptedTerms[hash];
     }
 
-    function acceptTerms(uint256 tokenId, string memory newTemplateUrl)
+    function acceptTerms(uint256 templateId, string memory newTemplateUrl)
         external
     {
-        _acceptTerms(tokenId, newTemplateUrl);
+        _acceptTerms(templateId, newTemplateUrl);
     }
 
     function _acceptTerms(uint256 _templateId, string memory _newtemplateUrl)
@@ -109,7 +118,19 @@ contract Registry is Ownable {
         );
         bytes32 hash = hashAddressId(msg.sender, _templateId);
         hasAcceptedTerms[hash] = true;
-        emit AcceptedTerms(msg.sender, _templateId, _templateUrl(_templateId));
+        emit AcceptedTerms(_templateId, msg.sender, _templateUrl(_templateId));
+    }
+
+    function acceptTermsFor(
+        address _signer,
+        string memory _newtemplateUrl,
+        uint256 _templateId,
+        bytes memory _signature
+    ) external onlyMetaSigner {
+        bytes32 hash = ECDSA.toEthSignedMessageHash(bytes(_newtemplateUrl));
+        address _checkedSigner = ECDSA.recover(hash, _signature);
+        require(_checkedSigner == _signer);
+        _acceptTerms(_templateId, _newtemplateUrl);
     }
 
     function templateUrl(uint256 templateId)
@@ -151,12 +172,12 @@ contract Registry is Ownable {
         );
     }
 
-    function templateUrlWithPrefix(uint256 tokenId, string memory prefix)
+    function templateUrlWithPrefix(uint256 templateId, string memory prefix)
         public
         view
         returns (string memory)
     {
-        return _templateUrlWithPrefix(tokenId, prefix);
+        return _templateUrlWithPrefix(templateId, prefix);
     }
 
     function _renderer(uint256 _tokenId) internal view returns (string memory) {
@@ -186,6 +207,7 @@ contract Registry is Ownable {
         onlyTemplateOwner(_templateId)
     {
         templates[_templateId] = _newTemplate;
+        lastTermChange[_templateId] = block.number;
         emit TemplateChanged(_templateId, _newTemplate);
     }
 
@@ -194,17 +216,15 @@ contract Registry is Ownable {
         string memory _key,
         string memory _value
     ) external onlyTemplateOwner(_templateId) {
+        // console.log("Inside setTerm");
+        // console.log("key:", _key);
         bytes32 hash = hashKeyId(_key, _templateId);
         terms[hash] = _value;
-        emit TermChanged(_key, _templateId, _value);
-    }
-
-    modifier onlyTemplateOwner(uint256 _templateId) {
-        require(
-            templateOwners[_templateId] == msg.sender,
-            "Not template owner"
-        );
-        _;
+        // console.log("key at line 211:", _key);
+        // bytes32 keyHash = keccak256(abi.encodePacked(_key));
+        // console.logBytes32(keyHash);
+        lastTermChange[_templateId] = block.number;
+        emit TermChanged(_templateId, _key, _value);
     }
 
     function mintTemplate(string memory _templateUri)
@@ -213,8 +233,53 @@ contract Registry is Ownable {
     {
         uint256 templateId = ids.current();
         templates[templateId] = _templateUri;
-        templateOwners[templateId] = msg.sender;
+        _templateOwners[templateId] = msg.sender;
         ids.increment();
+        emit TemplateCreated(templateId, _templateUri, msg.sender);
         return templateId;
+    }
+
+    /// @notice Adds a meta signer to the list of signers that can accept terms on behalf of the signer.
+    /// @dev This function adds a meta signer to the list of signers that can accept terms on behalf of the signer.
+    /// @dev This function is only available to the owner of the contract.
+    /// @param _signer The address of the signer that can accept terms on behalf of the signer.
+    function approveMetaSigner(address _signer, bool _approval)
+        external
+        onlyMetaSigner
+    {
+        _approveMetaSigner(_signer, _approval);
+    }
+
+    /// @notice Adds a meta signer to the list of signers that can accept terms on behalf of the signer.
+    /// @dev This internal function adds a meta signer to the list of signers that can accept terms on behalf of the signer.
+    /// @param _signer The address of the signer that can accept terms on behalf of the signer.
+    function _approveMetaSigner(address _signer, bool _approval) internal {
+        _metaSigners[_signer] = _approval;
+    }
+
+    /// @notice Returns whether the address is allowed to accept terms on behalf of the signer.
+    /// @dev This function returns whether the address is allowed to accept terms on behalf of the signer.
+    /// @param _signer The address of the signer that can accept terms on behalf of the signer.
+    /// @return Whether the address is allowed to accept terms on behalf of the signer.
+    function isMetaSigner(address _signer) public view returns (bool) {
+        return _metaSigners[_signer];
+    }
+
+    modifier onlyTemplateOwner(uint256 _templateId) {
+        require(
+            (_templateOwners[_templateId] == _msgSender()) ||
+                (_metaSigners[_msgSender()]),
+            "Not template owner"
+        );
+        _;
+    }
+
+    /// @notice This modifier requires that the msg.sender is either the owner of the contract or an approved metasigner
+    modifier onlyMetaSigner() {
+        require(
+            _metaSigners[_msgSender()] || owner() == _msgSender(),
+            "Not a metasigner or Owner"
+        );
+        _;
     }
 }
