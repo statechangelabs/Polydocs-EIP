@@ -52,6 +52,10 @@ async function main() {
   const has_signer_4_accepted_terms = await registry.acceptedTerms(signer_4.address,0);
   console.log(`Signer_4 has accepted terms: ${has_signer_4_accepted_terms}`);
 
+
+  // Test accepttermsFor
+
+  
 }
 
 // We recommend this pattern to be able to use async/await everywhere
