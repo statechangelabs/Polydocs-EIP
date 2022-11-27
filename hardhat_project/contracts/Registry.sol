@@ -17,6 +17,8 @@ contract Registry is Ownable {
     // mapping(string => mapping(uint256 => string)) public terms;
     // maps hashAddressId to boolean
     mapping(bytes32 => bool) hasAcceptedTerms;
+    // maps hashAddressId to signature document
+    mapping(bytes32 => string) termsSignedUrl;
     mapping(uint256 => string) public renderers;
     mapping(uint256 => uint256) public lastTermChange;
     // mapping of hash of key and template token ID to the value
@@ -36,7 +38,8 @@ contract Registry is Ownable {
     event AcceptedTerms(
         uint256 indexed templateId,
         address indexed user,
-        string uri
+        string templateUri,
+        string metadataUri
     );
     /// @notice This event is emitted when the global renderer is updated.
     /// @dev This event is emitted when the global renderer is updated.
@@ -104,23 +107,39 @@ contract Registry is Ownable {
     function acceptTerms(uint256 templateId, string memory newTemplateUrl)
         external
     {
-        _acceptTerms(templateId, newTemplateUrl);
+        _acceptTerms(msg.sender, templateId, newTemplateUrl, "");
     }
 
-    function _acceptTerms(uint256 _templateId, string memory _newtemplateUrl)
-        internal
-        virtual
-    {
+    function acceptTerms(
+        uint256 templateId,
+        string memory newTemplateUrl,
+        string memory _metdataUri
+    ) external {
+        _acceptTerms(msg.sender, templateId, newTemplateUrl, _metdataUri);
+    }
+
+    function _acceptTerms(
+        address _signer,
+        uint256 _templateId,
+        string memory _newtemplateUrl,
+        string memory _metadataUri
+    ) internal virtual {
         require(
             keccak256(bytes(_newtemplateUrl)) ==
                 keccak256(bytes(_templateUrl(_templateId))),
             "Terms Url does not match"
         );
-        bytes32 hash = hashAddressId(msg.sender, _templateId);
+        bytes32 hash = hashAddressId(_signer, _templateId);
         hasAcceptedTerms[hash] = true;
-        emit AcceptedTerms(_templateId, msg.sender, _templateUrl(_templateId));
+        emit AcceptedTerms(
+            _templateId,
+            _signer,
+            _templateUrl(_templateId),
+            _metadataUri
+        );
     }
 
+    // Function to accept terms on behalf of a signer WITH NO metadata
     function acceptTermsFor(
         address _signer,
         string memory _newtemplateUrl,
@@ -130,7 +149,22 @@ contract Registry is Ownable {
         bytes32 hash = ECDSA.toEthSignedMessageHash(bytes(_newtemplateUrl));
         address _checkedSigner = ECDSA.recover(hash, _signature);
         require(_checkedSigner == _signer);
-        _acceptTerms(_templateId, _newtemplateUrl);
+        _acceptTerms(_signer, _templateId, _newtemplateUrl, "");
+    }
+
+    // Function to accept terms on behalf of a signer WITH metadata
+
+    function acceptTermsFor(
+        address _signer,
+        string memory _newtemplateUrl,
+        string memory _metadataUri,
+        uint256 _templateId,
+        bytes memory _signature
+    ) external onlyMetaSigner {
+        bytes32 hash = ECDSA.toEthSignedMessageHash(bytes(_newtemplateUrl));
+        address _checkedSigner = ECDSA.recover(hash, _signature);
+        require(_checkedSigner == _signer);
+        _acceptTerms(_signer, _templateId, _newtemplateUrl, _metadataUri);
     }
 
     function templateUrl(uint256 templateId)
@@ -227,16 +261,36 @@ contract Registry is Ownable {
         emit TermChanged(_templateId, _key, _value);
     }
 
-    function mintTemplate(string memory _templateUri)
-        external
+    function _mintTemplate(address _signer, string memory _templateUri)
+        internal
         returns (uint256)
     {
         uint256 templateId = ids.current();
         templates[templateId] = _templateUri;
-        _templateOwners[templateId] = msg.sender;
+        _templateOwners[templateId] = _signer;
         ids.increment();
-        emit TemplateCreated(templateId, _templateUri, msg.sender);
+        emit TemplateCreated(templateId, _templateUri, _signer);
         return templateId;
+    }
+
+    // external function to call mintTemplate
+    function mintTemplate(string memory _templateUri)
+        external
+        returns (uint256)
+    {
+        return _mintTemplate(msg.sender, _templateUri);
+    }
+
+    // external function to call mintTemplate on behalf of a signer
+    function mintTemplateFor(
+        address _signer,
+        string memory _templateUri,
+        bytes memory _signature
+    ) external onlyMetaSigner returns (uint256) {
+        bytes32 hash = ECDSA.toEthSignedMessageHash(bytes(_templateUri));
+        address _checkedSigner = ECDSA.recover(hash, _signature);
+        require(_checkedSigner == _signer);
+        return _mintTemplate(_signer, _templateUri);
     }
 
     /// @notice Adds a meta signer to the list of signers that can accept terms on behalf of the signer.
