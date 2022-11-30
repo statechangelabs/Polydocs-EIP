@@ -66,11 +66,10 @@ contract Registry is Ownable {
     );
 
     // change to internal later
-    function hashKeyId(string memory key, uint256 templateId)
-        public
-        pure
-        returns (bytes32)
-    {
+    function hashKeyId(
+        string memory key,
+        uint256 templateId
+    ) public pure returns (bytes32) {
         bytes32 hash = keccak256(abi.encodePacked(templateId, key));
         // console.log("Inside HashKeyId");
         // console.logBytes32(hash);
@@ -79,34 +78,32 @@ contract Registry is Ownable {
     }
 
     // change to internal later
-    function hashAddressId(address user, uint256 templateId)
-        public
-        pure
-        returns (bytes32)
-    {
+    function hashAddressId(
+        address user,
+        uint256 templateId
+    ) public pure returns (bytes32) {
         return keccak256(abi.encodePacked(user, templateId));
     }
 
-    function acceptedTerms(address _signer, uint256 _templateId)
-        external
-        view
-        returns (bool)
-    {
+    function acceptedTerms(
+        address _signer,
+        uint256 _templateId
+    ) external view returns (bool) {
         return _acceptedTerms(_signer, _templateId);
     }
 
-    function _acceptedTerms(address _signer, uint256 _templateId)
-        internal
-        view
-        returns (bool)
-    {
+    function _acceptedTerms(
+        address _signer,
+        uint256 _templateId
+    ) internal view returns (bool) {
         bytes32 hash = hashAddressId(_signer, _templateId);
         return hasAcceptedTerms[hash];
     }
 
-    function acceptTerms(uint256 templateId, string memory newTemplateUrl)
-        external
-    {
+    function acceptTerms(
+        uint256 templateId,
+        string memory newTemplateUrl
+    ) external {
         _acceptTerms(msg.sender, templateId, newTemplateUrl, "");
     }
 
@@ -167,27 +164,22 @@ contract Registry is Ownable {
         _acceptTerms(_signer, _templateId, _newtemplateUrl, _metadataUri);
     }
 
-    function templateUrl(uint256 templateId)
-        external
-        view
-        returns (string memory)
-    {
+    function templateUrl(
+        uint256 templateId
+    ) external view returns (string memory) {
         return _templateUrlWithPrefix(templateId, "ipfs://");
     }
 
-    function _templateUrl(uint256 templateId)
-        internal
-        view
-        returns (string memory)
-    {
+    function _templateUrl(
+        uint256 templateId
+    ) internal view returns (string memory) {
         return _templateUrlWithPrefix(templateId, "ipfs://");
     }
 
-    function _templateUrlWithPrefix(uint256 templateId, string memory prefix)
-        internal
-        view
-        returns (string memory _templateUri)
-    {
+    function _templateUrlWithPrefix(
+        uint256 templateId,
+        string memory prefix
+    ) internal view returns (string memory _templateUri) {
         _templateUri = string(
             abi.encodePacked(
                 prefix,
@@ -206,11 +198,10 @@ contract Registry is Ownable {
         );
     }
 
-    function templateUrlWithPrefix(uint256 templateId, string memory prefix)
-        public
-        view
-        returns (string memory)
-    {
+    function templateUrlWithPrefix(
+        uint256 templateId,
+        string memory prefix
+    ) public view returns (string memory) {
         return _templateUrlWithPrefix(templateId, prefix);
     }
 
@@ -229,27 +220,45 @@ contract Registry is Ownable {
         _globalRenderer = _newGlobalRenderer;
     }
 
-    function setGlobalRenderer(string memory _newGlobalRenderer)
-        external
-        onlyOwner
-    {
+    function setGlobalRenderer(
+        string memory _newGlobalRenderer
+    ) external onlyOwner {
         _setGlobalRenderer(_newGlobalRenderer);
     }
 
-    function setTemplate(uint256 _templateId, string memory _newTemplate)
-        external
-        onlyTemplateOwner(_templateId)
-    {
+    function _setTemplate(
+        uint256 _templateId,
+        string memory _newTemplate
+    ) internal {
         templates[_templateId] = _newTemplate;
         lastTermChange[_templateId] = block.number;
         emit TemplateChanged(_templateId, _newTemplate);
     }
 
-    function setTerm(
+    function setTemplate(
+        uint256 _templateId,
+        string memory _newTemplate
+    ) external onlyTemplateOwner(_templateId) {
+        _setTemplate(_templateId, _newTemplate);
+    }
+
+    // function setTemplateFor(
+    //     address _signer,
+    //     uint256 _templateId,
+    //     string memory _newTemplate,
+    //     bytes memory _signature
+    // ) external onlyMetaSigner {
+    //     bytes32 hash = ECDSA.toEthSignedMessageHash(bytes(_newTemplate));
+    //     address _checkedSigner = ECDSA.recover(hash, _signature);
+    //     require(_checkedSigner == _signer);
+    //     _setTemplate(_templateId, _newTemplate);
+    // }
+
+    function _setTerm(
         uint256 _templateId,
         string memory _key,
         string memory _value
-    ) external onlyTemplateOwner(_templateId) {
+    ) internal {
         // console.log("Inside setTerm");
         // console.log("key:", _key);
         bytes32 hash = hashKeyId(_key, _templateId);
@@ -261,10 +270,18 @@ contract Registry is Ownable {
         emit TermChanged(_templateId, _key, _value);
     }
 
-    function _mintTemplate(address _signer, string memory _templateUri)
-        internal
-        returns (uint256)
-    {
+    function setTerm(
+        uint256 _templateId,
+        string memory _key,
+        string memory _value
+    ) external onlyTemplateOwner(_templateId) {
+        _setTerm(_templateId, _key, _value);
+    }
+
+    function _mintTemplate(
+        address _signer,
+        string memory _templateUri
+    ) internal returns (uint256) {
         uint256 templateId = ids.current();
         templates[templateId] = _templateUri;
         _templateOwners[templateId] = _signer;
@@ -274,10 +291,9 @@ contract Registry is Ownable {
     }
 
     // external function to call mintTemplate
-    function mintTemplate(string memory _templateUri)
-        external
-        returns (uint256)
-    {
+    function mintTemplate(
+        string memory _templateUri
+    ) external returns (uint256) {
         return _mintTemplate(msg.sender, _templateUri);
     }
 
@@ -297,10 +313,10 @@ contract Registry is Ownable {
     /// @dev This function adds a meta signer to the list of signers that can accept terms on behalf of the signer.
     /// @dev This function is only available to the owner of the contract.
     /// @param _signer The address of the signer that can accept terms on behalf of the signer.
-    function approveMetaSigner(address _signer, bool _approval)
-        external
-        onlyMetaSigner
-    {
+    function approveMetaSigner(
+        address _signer,
+        bool _approval
+    ) external onlyMetaSigner {
         _approveMetaSigner(_signer, _approval);
     }
 
