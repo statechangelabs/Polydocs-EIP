@@ -242,18 +242,6 @@ contract Registry is Ownable {
         _setTemplate(_templateId, _newTemplate);
     }
 
-    // function setTemplateFor(
-    //     address _signer,
-    //     uint256 _templateId,
-    //     string memory _newTemplate,
-    //     bytes memory _signature
-    // ) external onlyMetaSigner {
-    //     bytes32 hash = ECDSA.toEthSignedMessageHash(bytes(_newTemplate));
-    //     address _checkedSigner = ECDSA.recover(hash, _signature);
-    //     require(_checkedSigner == _signer);
-    //     _setTemplate(_templateId, _newTemplate);
-    // }
-
     function _setTerm(
         uint256 _templateId,
         string memory _key,
@@ -297,17 +285,25 @@ contract Registry is Ownable {
         return _mintTemplate(msg.sender, _templateUri);
     }
 
-    // external function to call mintTemplate on behalf of a signer
-    function mintTemplateFor(
-        address _signer,
+    // external function to call mintTemplate
+    function mintTemplate(
         string memory _templateUri,
-        bytes memory _signature
+        address _owner
     ) external onlyMetaSigner returns (uint256) {
-        bytes32 hash = ECDSA.toEthSignedMessageHash(bytes(_templateUri));
-        address _checkedSigner = ECDSA.recover(hash, _signature);
-        require(_checkedSigner == _signer);
-        return _mintTemplate(_signer, _templateUri);
+        return _mintTemplate(_owner, _templateUri);
     }
+
+    // external function to call mintTemplate on behalf of a signer
+    // function mintTemplateFor(
+    //     address _signer,
+    //     string memory _templateUri,
+    //     bytes memory _signature
+    // ) external onlyMetaSigner returns (uint256) {
+    //     bytes32 hash = ECDSA.toEthSignedMessageHash(bytes(_templateUri));
+    //     address _checkedSigner = ECDSA.recover(hash, _signature);
+    //     require(_checkedSigner == _signer);
+    //     return _mintTemplate(_signer, _templateUri);
+    // }
 
     /// @notice Adds a meta signer to the list of signers that can accept terms on behalf of the signer.
     /// @dev This function adds a meta signer to the list of signers that can accept terms on behalf of the signer.
