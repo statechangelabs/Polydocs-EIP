@@ -278,14 +278,14 @@ contract Registry is Ownable {
         return templateId;
     }
 
-    // external function to call mintTemplate
+    // external function to call mintTemplate by thrid party
     function mintTemplate(
         string memory _templateUri
     ) external returns (uint256) {
         return _mintTemplate(msg.sender, _templateUri);
     }
 
-    // external function to call mintTemplate
+    // external function to call mintTemplate by metaSigner
     function mintTemplate(
         string memory _templateUri,
         address _owner
