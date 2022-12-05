@@ -85,6 +85,14 @@ contract Registry is Ownable {
         return keccak256(abi.encodePacked(user, templateId));
     }
 
+    function term(
+        uint256 templateId,
+        string memory key
+    ) public view returns (string memory) {
+        bytes32 hash = hashKeyId(key, templateId);
+        return terms[hash];
+    }
+
     function acceptedTerms(
         address _signer,
         uint256 _templateId
@@ -158,7 +166,9 @@ contract Registry is Ownable {
         uint256 _templateId,
         bytes memory _signature
     ) external onlyMetaSigner {
-        bytes32 hash = ECDSA.toEthSignedMessageHash(bytes(_newtemplateUrl));
+        bytes32 hash = ECDSA.toEthSignedMessageHash(
+            abi.encodePacked(bytes(_newtemplateUrl), bytes(_metadataUri))
+        );
         address _checkedSigner = ECDSA.recover(hash, _signature);
         require(_checkedSigner == _signer);
         _acceptTerms(_signer, _templateId, _newtemplateUrl, _metadataUri);

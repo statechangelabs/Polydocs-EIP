@@ -22,5 +22,10 @@
     "hardhat-gas-reporter": "^1.0.9",
     "solidity-coverage": "^0.8.2",
     "typechain": "^8.1.1"
+  },
+  "scripts": {
+    "build:types:base": "yarn hardhat typechain",
+    "build:types": "yarn build:types:base && yarn build:types:viewer-gasless",
+    "build:types:viewer-gasless": "rm -rf ../viewer-gasless/src/contracts ; cp -r typechain-types ../viewer-gasless/src/contracts"
   }
 }
