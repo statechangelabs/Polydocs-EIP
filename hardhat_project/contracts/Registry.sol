@@ -24,6 +24,7 @@ contract Registry is Ownable {
     // mapping of hash of key and template token ID to the value
     mapping(bytes32 => string) public terms;
     mapping(uint256 => address) public _templateOwners;
+    mapping(uint256 => string) public metadataUri;
 
     /// @notice Returns whether the address is allowed to accept terms on behalf of the signer.
     /// @dev This function returns whether the address is allowed to accept terms on behalf of the signer.
@@ -58,6 +59,8 @@ contract Registry is Ownable {
     /// @param _template The new template.
     /// @param _templateId The token id of the token for which the template is being updated.
     event TemplateChanged(uint256 indexed _templateId, string _template);
+
+    event MetadataUriChanged(uint256 indexed _templateId, string _metadataUri);
 
     event TemplateCreated(
         uint256 indexed _templateId,
@@ -201,9 +204,9 @@ contract Registry is Ownable {
                 "::",
                 Strings.toHexString(uint160(address(this)), 20),
                 "::",
-                Strings.toString(lastTermChange[templateId]),
+                Strings.toString(templateId),
                 "::",
-                Strings.toString(templateId)
+                Strings.toString(lastTermChange[templateId])
             )
         );
     }
@@ -252,6 +255,22 @@ contract Registry is Ownable {
         _setTemplate(_templateId, _newTemplate);
     }
 
+    function setMetadataUri(
+        uint256 _templateId,
+        string memory _newMetadataUri
+    ) external onlyTemplateOwner(_templateId) {
+        _setMetadataUri(_templateId, _newMetadataUri);
+    }
+
+    function _setMetadataUri(
+        uint256 _templateId,
+        string memory _newMetadataUri
+    ) internal {
+        metadataUri[_templateId] = _newMetadataUri;
+        lastTermChange[_templateId] = block.number;
+        emit MetadataUriChanged(_templateId, _newMetadataUri);
+    }
+
     function _setTerm(
         uint256 _templateId,
         string memory _key,
@@ -283,6 +302,7 @@ contract Registry is Ownable {
         uint256 templateId = ids.current();
         templates[templateId] = _templateUri;
         _templateOwners[templateId] = _signer;
+        lastTermChange[templateId] = block.number;
         ids.increment();
         emit TemplateCreated(templateId, _templateUri, _signer);
         return templateId;
