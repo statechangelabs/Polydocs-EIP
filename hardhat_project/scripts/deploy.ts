@@ -9,13 +9,19 @@ async function main() {
   await registry.deployed();
 
   console.log(`Registry deployed to ${registry.address}`);
+  // const provider = new ethers.providers.JsonRpcProvider(process.env.ALCHEMY_POLYGON);
+  // const wallet = new ethers.Wallet(process.env.PK, provider)
+  const wallets = await ethers.getSigners();
+  const wallet = wallets[0];
+  // approve metasigner txn
+  const add_metasigner = await registry.approveMetaSigner(wallet.address, true);
+  const add_metasigner_receipt = await add_metasigner.wait();
 
+  // create template 
 
-  // // create template 
-
-  // const create_template = await registry.connect(signer_2).mintTemplate("templateURI");
-  // const receipt_create_template = await create_template.wait();
-  // console.log(`Template created with id ${receipt_create_template?.events[0].args[0]} by signer_2 with address ${signer_2.address}`);
+  const create_template = await registry['mintTemplate(string)']("bafkreifixnauyla72v2axblfn6qxy5i5i4jgy7ucwwnhllhdqoj3y22k6a");
+  const receipt_create_template = await create_template.wait();
+  console.log(`Template created with id ${receipt_create_template?.events[0].args[0]} by wallet with address ${wallet.address}`);
 
 
   // // set term

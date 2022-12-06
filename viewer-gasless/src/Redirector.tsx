@@ -1,6 +1,6 @@
 import { FC, useState } from "react";
 import { BigNumber, ethers } from "ethers";
-import { Signable__factory, TokenSignable__factory } from "./contracts";
+import { Registry__factory } from "./contracts";
 import useAsyncEffect from "./useAsyncEffect";
 import Title from "./Title";
 import Topography from "./topography.svg";
@@ -31,39 +31,39 @@ const Redirector: FC = () => {
     }
     try {
       const provider = new ethers.providers.JsonRpcProvider(providers[chain]);
-      if (token) {
-        const contract = TokenSignable__factory.connect(address, provider);
-        const termsUrl = await contract.termsUrl(BigNumber.from(token));
-        const [, fragment] = termsUrl.split("://");
-        console.log("in token view", fragment);
-        window.location.href =
-          window.location.protocol +
-          "//" +
-          window.location.host +
-          "/#/" +
-          fragment;
-        window.location.reload();
-      } else {
-        const contract = Signable__factory.connect(address, provider);
-        const termsUrl = await contract.termsUrl();
-        const [, fragmentBase] = termsUrl.split("://");
-        const [renderer, fragment] = fragmentBase.split("/#/");
-        //validate renderer
-        if (validGaslessRenderers.includes(renderer)) {
-          window.location.href =
-            window.location.protocol +
-            "//" +
-            window.location.host +
-            "/#/" +
-            fragment;
-          window.location.reload();
-          console.log("in nontotken view", fragment);
-        } else {
-          window.location.href =
-            "https://ipfs.io/ipfs/" + renderer + ("/#/" + fragment);
-        }
-        // }
-      }
+
+      const contract = Registry__factory.connect(address, provider);
+      const termsUrl = await contract.templateUrl(BigNumber.from(token));
+      const [, fragment] = termsUrl.split("://");
+      console.log("in token view", fragment);
+      window.location.href =
+        window.location.protocol +
+        "//" +
+        window.location.host +
+        "/#/" +
+        fragment;
+      window.location.reload();
+      // } else {
+      //   const contract = Registry__factory.connect(address, provider);
+      //   const termsUrl = await contract.templateUrl();
+      //   const [, fragmentBase] = termsUrl.split("://");
+      //   const [renderer, fragment] = fragmentBase.split("/#/");
+      //   //validate renderer
+      //   if (validGaslessRenderers.includes(renderer)) {
+      //     window.location.href =
+      //       window.location.protocol +
+      //       "//" +
+      //       window.location.host +
+      //       "/#/" +
+      //       fragment;
+      //     window.location.reload();
+      //     console.log("in nontotken view", fragment);
+      //   } else {
+      //     window.location.href =
+      //       "https://ipfs.io/ipfs/" + renderer + ("/#/" + fragment);
+      //   }
+      //   // }
+      // }
     } catch (e) {
       console.log("got an error", e);
     }

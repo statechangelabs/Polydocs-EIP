@@ -24,6 +24,7 @@ const ContractFinder: FC = () => {
         <div className="flex flex-row justify-center">
           <Formik
             initialValues={{
+              tokenId: 0,
               contractAddress: "",
               chainID: 137,
             }}
@@ -32,6 +33,10 @@ const ContractFinder: FC = () => {
               let hasError = false;
               if (!ethers.utils.isAddress(values.contractAddress)) {
                 errors.contractAddress = "Invalid address";
+                hasError = true;
+              }
+              if (values.tokenId < 0) {
+                errors.tokenId = "Invalid Token ID";
                 hasError = true;
               }
               if (hasError) {
@@ -50,7 +55,9 @@ const ContractFinder: FC = () => {
                 "::" +
                 values.chainID +
                 "::" +
-                values.contractAddress;
+                values.contractAddress +
+                "::" +
+                values.tokenId;
               window.location.reload();
             }}
           >
@@ -108,7 +115,7 @@ const ContractFinder: FC = () => {
                       What is the address (starting with 0x followed by 40
                       characters) of the smart contract?
                     </p>
-                    <div className="mt-4">
+                    <div className="mt-2">
                       <Field
                         type="text"
                         name="contractAddress"
@@ -120,6 +127,31 @@ const ContractFinder: FC = () => {
                     <ErrorMessage
                       component="div"
                       name="contractAddress"
+                      className="text-red-500 font-xs"
+                    />
+                  </div>
+                  <div className="mt-4">
+                    <label
+                      htmlFor="tokenId"
+                      className="block text-base font-medium text-gray-900"
+                    >
+                      Token Id
+                    </label>
+                    <p className="text-xs leading-5 opacity-75">
+                      What is the tokenId of the template?
+                    </p>
+                    <div className="mt-2">
+                      <Field
+                        type="text"
+                        name="tokenId"
+                        id="tokenId"
+                        className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 w-100"
+                        placeholder="eg: 5"
+                      />
+                    </div>
+                    <ErrorMessage
+                      component="div"
+                      name="tokenId"
                       className="text-red-500 font-xs"
                     />
                   </div>

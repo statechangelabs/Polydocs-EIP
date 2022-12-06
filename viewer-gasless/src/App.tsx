@@ -19,10 +19,10 @@ import Redirector from "./Redirector";
 let fragment = window.location.hash;
 if (fragment.startsWith("#/")) fragment = fragment.substring(2);
 else if (fragment.startsWith("#")) fragment = fragment.substring(1);
-const [documentId, chainId, contractAddress, block, tokenId] =
+const [documentId, chainId, contractAddress, tokenId, block] =
   fragment.split("::");
 const base16Chain = chainId && "0x" + Number.parseInt(chainId).toString(16);
-console.log({ documentId, chainId, contractAddress, block, tokenId });
+console.log({ documentId, chainId, contractAddress, tokenId, block });
 function App() {
   useReloadOnChainChange();
   if (documentId === "redirect") return <Redirector />;
