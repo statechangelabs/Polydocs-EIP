@@ -40,12 +40,14 @@ export interface RegistryInterface extends utils.Interface {
     "hashKeyId(string,uint256)": FunctionFragment;
     "isMetaSigner(address)": FunctionFragment;
     "lastTermChange(uint256)": FunctionFragment;
+    "metadataUri(uint256)": FunctionFragment;
     "mintTemplate(string,address)": FunctionFragment;
     "mintTemplate(string)": FunctionFragment;
     "owner()": FunctionFragment;
     "renderers(uint256)": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "setGlobalRenderer(string)": FunctionFragment;
+    "setMetadataUri(uint256,string)": FunctionFragment;
     "setTemplate(uint256,string)": FunctionFragment;
     "setTerm(uint256,string,string)": FunctionFragment;
     "templateUrl(uint256)": FunctionFragment;
@@ -69,12 +71,14 @@ export interface RegistryInterface extends utils.Interface {
       | "hashKeyId"
       | "isMetaSigner"
       | "lastTermChange"
+      | "metadataUri"
       | "mintTemplate(string,address)"
       | "mintTemplate(string)"
       | "owner"
       | "renderers"
       | "renounceOwnership"
       | "setGlobalRenderer"
+      | "setMetadataUri"
       | "setTemplate"
       | "setTerm"
       | "templateUrl"
@@ -145,6 +149,10 @@ export interface RegistryInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: "metadataUri",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "mintTemplate(string,address)",
     values: [PromiseOrValue<string>, PromiseOrValue<string>]
   ): string;
@@ -164,6 +172,10 @@ export interface RegistryInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "setGlobalRenderer",
     values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setMetadataUri",
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "setTemplate",
@@ -244,6 +256,10 @@ export interface RegistryInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "metadataUri",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "mintTemplate(string,address)",
     data: BytesLike
   ): Result;
@@ -259,6 +275,10 @@ export interface RegistryInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setGlobalRenderer",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setMetadataUri",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -285,6 +305,7 @@ export interface RegistryInterface extends utils.Interface {
   events: {
     "AcceptedTerms(uint256,address,string,string)": EventFragment;
     "GlobalRendererChanged(string)": EventFragment;
+    "MetadataUriChanged(uint256,string)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "TemplateChanged(uint256,string)": EventFragment;
     "TemplateCreated(uint256,string,address)": EventFragment;
@@ -293,6 +314,7 @@ export interface RegistryInterface extends utils.Interface {
 
   getEvent(nameOrSignatureOrTopic: "AcceptedTerms"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "GlobalRendererChanged"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "MetadataUriChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TemplateChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TemplateCreated"): EventFragment;
@@ -322,6 +344,18 @@ export type GlobalRendererChangedEvent = TypedEvent<
 
 export type GlobalRendererChangedEventFilter =
   TypedEventFilter<GlobalRendererChangedEvent>;
+
+export interface MetadataUriChangedEventObject {
+  _templateId: BigNumber;
+  _metadataUri: string;
+}
+export type MetadataUriChangedEvent = TypedEvent<
+  [BigNumber, string],
+  MetadataUriChangedEventObject
+>;
+
+export type MetadataUriChangedEventFilter =
+  TypedEventFilter<MetadataUriChangedEvent>;
 
 export interface OwnershipTransferredEventObject {
   previousOwner: string;
@@ -466,6 +500,11 @@ export interface Registry extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    metadataUri(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
     "mintTemplate(string,address)"(
       _templateUri: PromiseOrValue<string>,
       _owner: PromiseOrValue<string>,
@@ -490,6 +529,12 @@ export interface Registry extends BaseContract {
 
     setGlobalRenderer(
       _newGlobalRenderer: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setMetadataUri(
+      _templateId: PromiseOrValue<BigNumberish>,
+      _newMetadataUri: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -608,6 +653,11 @@ export interface Registry extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  metadataUri(
+    arg0: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
   "mintTemplate(string,address)"(
     _templateUri: PromiseOrValue<string>,
     _owner: PromiseOrValue<string>,
@@ -632,6 +682,12 @@ export interface Registry extends BaseContract {
 
   setGlobalRenderer(
     _newGlobalRenderer: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setMetadataUri(
+    _templateId: PromiseOrValue<BigNumberish>,
+    _newMetadataUri: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -750,6 +806,11 @@ export interface Registry extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    metadataUri(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
     "mintTemplate(string,address)"(
       _templateUri: PromiseOrValue<string>,
       _owner: PromiseOrValue<string>,
@@ -772,6 +833,12 @@ export interface Registry extends BaseContract {
 
     setGlobalRenderer(
       _newGlobalRenderer: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setMetadataUri(
+      _templateId: PromiseOrValue<BigNumberish>,
+      _newMetadataUri: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -841,6 +908,15 @@ export interface Registry extends BaseContract {
     GlobalRendererChanged(
       _renderer?: PromiseOrValue<string> | null
     ): GlobalRendererChangedEventFilter;
+
+    "MetadataUriChanged(uint256,string)"(
+      _templateId?: PromiseOrValue<BigNumberish> | null,
+      _metadataUri?: null
+    ): MetadataUriChangedEventFilter;
+    MetadataUriChanged(
+      _templateId?: PromiseOrValue<BigNumberish> | null,
+      _metadataUri?: null
+    ): MetadataUriChangedEventFilter;
 
     "OwnershipTransferred(address,address)"(
       previousOwner?: PromiseOrValue<string> | null,
@@ -953,6 +1029,11 @@ export interface Registry extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    metadataUri(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     "mintTemplate(string,address)"(
       _templateUri: PromiseOrValue<string>,
       _owner: PromiseOrValue<string>,
@@ -977,6 +1058,12 @@ export interface Registry extends BaseContract {
 
     setGlobalRenderer(
       _newGlobalRenderer: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setMetadataUri(
+      _templateId: PromiseOrValue<BigNumberish>,
+      _newMetadataUri: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1096,6 +1183,11 @@ export interface Registry extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    metadataUri(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     "mintTemplate(string,address)"(
       _templateUri: PromiseOrValue<string>,
       _owner: PromiseOrValue<string>,
@@ -1120,6 +1212,12 @@ export interface Registry extends BaseContract {
 
     setGlobalRenderer(
       _newGlobalRenderer: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setMetadataUri(
+      _templateId: PromiseOrValue<BigNumberish>,
+      _newMetadataUri: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

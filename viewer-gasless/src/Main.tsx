@@ -36,7 +36,7 @@ import Loading from "./Loading";
 
 const POLYDOCS_URL =
   process.env.REACT_APP_POLYDOCS_URL ??
-  "https://y86jifedeh.execute-api.us-east-1.amazonaws.com/dev/sign";
+  "https://xw8v-tcfi-85ay.n7.xano.io/api:3v7122XT/sign";
 
 export const ethereum = (window as unknown as { ethereum: any }).ethereum;
 export const provider = ethereum
@@ -58,16 +58,25 @@ const useSign = (contractAddress: string, tokenId: string) => {
       return false;
     }
     setIsSigning(true);
-    const message = "I agree to the terms in this document: " + termsUrl;
+    // @TODO: Add  "I agree to the terms in this document: " to the start of the message and to the smart contract for signing purposes
+    const message = termsUrl;
     const signature = await provider.getSigner().signMessage(message);
+    const chain_id = (await provider.getNetwork()).chainId;
+    const body = JSON.stringify({
+      template_id_hex: tokenId,
+      template_uri: message,
+      signature: signature,
+      signer: address,
+      chain_id: chain_id,
+    });
+    console.log("Body is : ", body);
     try {
       const res = await fetch(POLYDOCS_URL, {
+        headers: {
+          "Content-Type": "application/json",
+        },
         method: "post",
-        body: JSON.stringify({
-          message,
-          signature,
-          address,
-        }),
+        body,
       });
       if (res.status === 200) {
         return true;
@@ -207,7 +216,7 @@ const Renderer: FC<{
       contractAddress,
       provider.getSigner()
     );
-    const uri = (await contract.templateUrl(tokenId, {
+    const uri = (await contract.metadataUri(tokenId, {
       blockTag: parseInt(block),
     })) as string;
     const strippedUri = uri.split("://").pop() || uri;

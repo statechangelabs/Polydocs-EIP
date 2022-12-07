@@ -147,6 +147,15 @@ contract Registry is Ownable {
         );
     }
 
+    function checkUrls(
+        string memory _newtemplateUrl,
+        uint256 _templateId
+    ) external view returns (bool) {
+        return
+            keccak256(bytes(_newtemplateUrl)) ==
+            keccak256(bytes(_templateUrl(_templateId)));
+    }
+
     // Function to accept terms on behalf of a signer WITH NO metadata
     function acceptTermsFor(
         address _signer,

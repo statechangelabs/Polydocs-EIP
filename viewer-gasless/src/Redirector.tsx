@@ -34,7 +34,9 @@ const Redirector: FC = () => {
 
       const contract = Registry__factory.connect(address, provider);
       const termsUrl = await contract.templateUrl(BigNumber.from(token));
-      const [, fragment] = termsUrl.split("://");
+      // const [, fragment] = termsUrl.split("://");
+      const [, fragmentBase] = termsUrl.split("://");
+      const [renderer, fragment] = fragmentBase.split("/#/");
       console.log("in token view", fragment);
       window.location.href =
         window.location.protocol +
