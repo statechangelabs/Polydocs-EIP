@@ -13,45 +13,66 @@ contract Registry is Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private ids;
 
+    /// @notice This is a mapping of template token ID to the template.
+    /// @dev This is a mapping of template token ID to the template.
     mapping(uint256 => string) public templates;
-    // mapping(string => mapping(uint256 => string)) public terms;
-    // maps hashAddressId to boolean
+
+    /// @notice This is a mapping of hash of address and template token ID to the boolean value.
+    /// @dev This is a mapping of hash of address and template token ID to the boolean value.
     mapping(bytes32 => bool) hasAcceptedTerms;
-    // maps hashAddressId to signature document
-    mapping(bytes32 => string) termsSignedUrl;
+
+    /// @notice This is a mapping of template token ID to the template renderer.
+    /// @dev This is a mapping of template token ID to the template renderer.
     mapping(uint256 => string) public renderers;
+
+    /// @notice This is a mapping of template token ID to the last time the template or its terms were changed.
+    /// @dev This is a mapping of template token ID to the last time the template or its terms were changed.
     mapping(uint256 => uint256) public lastTermChange;
-    // mapping of hash of key and template token ID to the value
+
+    /// @notice This is a mapping of hash of key and template token ID to the value.
+    /// @dev This is a mapping of hash of key and template token ID to the value.
     mapping(bytes32 => string) public terms;
+
+    /// @notice This is a mapping of template token ID to the template owner.
+    /// @dev This is a mapping of template token ID to the template owner.
     mapping(uint256 => address) public _templateOwners;
+
+    /// @notice This is a mapping of template token ID to the template metadata URI.
+    /// @dev This is a mapping of template token ID to the template metadata URI.
     mapping(uint256 => string) public metadataUri;
 
-    /// @notice Returns whether the address is allowed to accept terms on behalf of the signer.
-    /// @dev This function returns whether the address is allowed to accept terms on behalf of the signer.
+    /// @notice This mapping of addresses returns whether the address is allowed to accept terms on behalf of the signer.
+    /// @dev This mapping of addresses returns whether the address is allowed to accept terms on behalf of the signer.
     mapping(address => bool) private _metaSigners;
-    // address[] owners;
 
     /// @notice The default value of the global renderer.
     /// @dev The default value of the global renderer.
     string _globalRenderer =
         "bafybeig44fabnqp66umyilergxl6bzwno3ntill3yo2gtzzmyhochbchhy";
 
+    /// @notice This event is emitted when the terms for a template are accepted.
+    /// @dev This event is emitted when the terms for a template are accepted.
+    /// @param _templateId is the id of the tempalte for which the terms are being accepted.
+    /// @param _user is the user who is accepting the terms.
+    /// @param _templateUri is the URI of the template.
+    /// @param _metadataUri is the URI of the metadata.
     event AcceptedTerms(
-        uint256 indexed templateId,
-        address indexed user,
-        string templateUri,
-        string metadataUri
+        uint256 indexed _templateId,
+        address indexed _user,
+        string _templateUri,
+        string _metadataUri
     );
+
     /// @notice This event is emitted when the global renderer is updated.
     /// @dev This event is emitted when the global renderer is updated.
-    /// @param _renderer The new renderer.
+    /// @param _renderer is the new renderer.
     event GlobalRendererChanged(string indexed _renderer);
 
     /// @notice Event emitted when a new token term is added.
     /// @dev Event emitted when a new token term is added.
-    /// @param _term The term being added to the contract.
-    /// @param _templateId The token id of the token for which the term is being added.
-    /// @param _value The value of the term being added to the contract.
+    /// @param _term is the term being added to the contract.
+    /// @param _templateId is the token id of the token for which the term is being added.
+    /// @param _value is the value of the term being added to the contract.
     event TermChanged(uint256 indexed _templateId, string _term, string _value);
 
     /// @notice This event is emitted when the global template is updated.
@@ -60,42 +81,67 @@ contract Registry is Ownable {
     /// @param _templateId The token id of the token for which the template is being updated.
     event TemplateChanged(uint256 indexed _templateId, string _template);
 
+    /// @notice This event is emitted when the metadata of the template is updated.
+    /// @dev This event is emitted when the metadata of the template is updated.
+    /// @param _templateId The token id of the token for which the metadata is being updated.
+    /// @param _metadataUri The new metadata URI.
     event MetadataUriChanged(uint256 indexed _templateId, string _metadataUri);
 
+    /// @notice This event is emitted when a new template is created.
+    /// @dev This event is emitted when a new template is created.
+    /// @param _templateId The id of the template created.
+    /// @param _template is the URI of the template created.
+    /// @param _owner is the owner of the template.
     event TemplateCreated(
         uint256 indexed _templateId,
         string _template,
         address _owner
     );
 
-    // change to internal later
-    function hashKeyId(
+    /// @notice This function returns the hash of a template id and a key.
+    /// @dev This function returns the hash of a template id and a key.
+    /// @param key is the key for which the hash is being calculated.
+    /// @param templateId is the id of the template for which the hash is being calculated.
+    /// @return hash is the hash of the template id and the key that is returned.
+    function _hashKeyId(
         string memory key,
         uint256 templateId
-    ) public pure returns (bytes32) {
+    ) internal pure returns (bytes32) {
         bytes32 hash = keccak256(abi.encodePacked(templateId, key));
-        // console.log("Inside HashKeyId");
-        // console.logBytes32(hash);
-        // console.log("key:", key);
         return hash;
     }
 
-    // change to internal later
-    function hashAddressId(
+    /// @notice This function returns the hash of an address and a template id.
+    /// @dev This function returns the hash of an address and a template id.
+    /// @param user is the address for which the hash is being calculated.
+    /// @param templateId is the id of the template for which the hash is being calculated.
+    /// @return hash is the hash of the address and the template id that is returned.
+    function _hashAddressId(
         address user,
         uint256 templateId
-    ) public pure returns (bytes32) {
+    ) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked(user, templateId));
     }
 
+    /// @notice This function returns the value of a term for a template.
+    /// @dev This function returns the value of a term for a template given its template id and key. The key is the term name.
+    /// Hash of the key and template id is used to get the value of the term.
+    /// @param templateId is the id of the template for which the term is being returned.
+    /// @param key is the key for which the value is being looked up.
+    /// @return Returns a string value of the term.
     function term(
         uint256 templateId,
         string memory key
     ) public view returns (string memory) {
-        bytes32 hash = hashKeyId(key, templateId);
+        bytes32 hash = _hashKeyId(key, templateId);
         return terms[hash];
     }
 
+    /// @notice This is an external function that calls an internal function to check if the terms for a template have been accepted by a user.
+    /// @dev This is an external function that calls an internal function to check if the terms for a template have been accepted by a user (_signer).
+    /// @param _signer is the address of the user for which the acceptance of the terms are being checked.
+    /// @param _templateId is the id of the template for which the acceptance of the terms are being checked.
+    /// @return Returns a boolean value indicating whether the terms have been accepted or not.
     function acceptedTerms(
         address _signer,
         uint256 _templateId
@@ -103,29 +149,52 @@ contract Registry is Ownable {
         return _acceptedTerms(_signer, _templateId);
     }
 
+    /// @notice This is an internal function to check if the terms for a template have been accepted by a user.
+    /// @dev This is an internal function to check if the terms for a template have been accepted by a user (_signer).
+    /// @param _signer is the address of the user for which the acceptance of the terms are being checked.
+    /// @param _templateId is the id of the template for which the acceptance of the terms are being checked.
+    /// @return Returns a boolean value indicating whether the terms have been accepted or not.
     function _acceptedTerms(
         address _signer,
         uint256 _templateId
     ) internal view returns (bool) {
-        bytes32 hash = hashAddressId(_signer, _templateId);
+        bytes32 hash = _hashAddressId(_signer, _templateId);
         return hasAcceptedTerms[hash];
     }
 
+    /// @notice This is an external function that calls an internal function to accept terms for a template without metadata.
+    /// @dev This is an external function that calls an internal function to accept terms for a template.
+    /// The terms are accepted on behalf of the the msg.sender without any metadata.
+    /// @param _templateId is the id of the template for which the terms are being accepted.
+    /// @param _newTemplateUrl is the new template url for the template for which the terms are being accepted.
     function acceptTerms(
-        uint256 templateId,
-        string memory newTemplateUrl
+        uint256 _templateId,
+        string memory _newTemplateUrl
     ) external {
-        _acceptTerms(msg.sender, templateId, newTemplateUrl, "");
+        _acceptTerms(msg.sender, _templateId, _newTemplateUrl, "");
     }
 
+    /// @notice This is an external function that calls an internal function to accept terms for a template with metadata.
+    /// @dev This is an external function that calls an internal function to accept terms for a template.
+    /// The terms are accepted on behalf of the the msg.sender with metadata.
+    /// @param _templateId is the id of the template for which the terms are being accepted.
+    /// @param _newTemplateUrl is the new template url for the template for which the terms are being accepted.
+    /// @param _metdataUri is the metadata URI for the template for which the terms are being accepted.
     function acceptTerms(
-        uint256 templateId,
-        string memory newTemplateUrl,
+        uint256 _templateId,
+        string memory _newTemplateUrl,
         string memory _metdataUri
     ) external {
-        _acceptTerms(msg.sender, templateId, newTemplateUrl, _metdataUri);
+        _acceptTerms(msg.sender, _templateId, _newTemplateUrl, _metdataUri);
     }
 
+    /// @notice This is an internal function to accept terms for a given template with metadata.
+    /// @dev This is an internal function to accept terms for a template by signer for given template id, template URI and metadata.
+    /// It emits an event AcceptedTerms once the terms are accepted.
+    /// @param _signer is the address of the user who is accepting the terms.
+    /// @param _templateId is the id of the template for which the terms are being accepted.
+    /// @param _newtemplateUrl is the new template url for the template for which the terms are being accepted.
+    /// @param _metadataUri is the metadata URI for the template for which the terms are being accepted.
     function _acceptTerms(
         address _signer,
         uint256 _templateId,
@@ -137,7 +206,7 @@ contract Registry is Ownable {
                 keccak256(bytes(_templateUrl(_templateId))),
             "Terms Url does not match"
         );
-        bytes32 hash = hashAddressId(_signer, _templateId);
+        bytes32 hash = _hashAddressId(_signer, _templateId);
         hasAcceptedTerms[hash] = true;
         emit AcceptedTerms(
             _templateId,
@@ -147,16 +216,22 @@ contract Registry is Ownable {
         );
     }
 
-    function checkUrls(
-        string memory _newtemplateUrl,
-        uint256 _templateId
-    ) external view returns (bool) {
-        return
-            keccak256(bytes(_newtemplateUrl)) ==
-            keccak256(bytes(_templateUrl(_templateId)));
-    }
+    // function checkUrls(
+    //     string memory _newtemplateUrl,
+    //     uint256 _templateId
+    // ) external view returns (bool) {
+    //     return
+    //         keccak256(bytes(_newtemplateUrl)) ==
+    //         keccak256(bytes(_templateUrl(_templateId)));
+    // }
 
-    // Function to accept terms on behalf of a signer WITH NO metadata
+    /// @notice This is an external function that calls an internal function to accept terms for a template on behalf of a signer without metadata.
+    /// @dev This is an external function that calls an internal function to accept terms for a template on behalf of a signer without metadata.
+    /// The terms are accepted on behalf of the the _signer without any metadata. The signer is checked against the signature.
+    /// @param _signer is the address of the user who is accepting the terms.
+    /// @param _templateId is the id of the template for which the terms are being accepted.
+    /// @param _newtemplateUrl is the new template url for the template for which the terms are being accepted.
+    /// @param _signature is the signature of the signer for the terms acceptance.
     function acceptTermsFor(
         address _signer,
         string memory _newtemplateUrl,
@@ -169,8 +244,13 @@ contract Registry is Ownable {
         _acceptTerms(_signer, _templateId, _newtemplateUrl, "");
     }
 
-    // Function to accept terms on behalf of a signer WITH metadata
-
+    /// @notice This is an external function that calls an internal function to accept terms for a template on behalf of a signer without metadata.
+    /// @dev This is an external function that calls an internal function to accept terms for a template on behalf of a signer without metadata.
+    /// The terms are accepted on behalf of the the _signer without any metadata. The signer is checked against the signature.
+    /// @param _signer is the address of the user who is accepting the terms.
+    /// @param _templateId is the id of the template for which the terms are being accepted.
+    /// @param _newtemplateUrl is the new template url for the template for which the terms are being accepted.
+    /// @param _signature is the signature of the signer for the terms acceptance.
     function acceptTermsFor(
         address _signer,
         string memory _newtemplateUrl,
@@ -233,8 +313,6 @@ contract Registry is Ownable {
     }
 
     function _template(uint256 _tokenId) internal view returns (string memory) {
-        // if (bytes(templates[_tokenId]).length == 0) return _globalDocTemplate;
-        // else return templates[_tokenId];
         return templates[_tokenId];
     }
 
@@ -287,7 +365,7 @@ contract Registry is Ownable {
     ) internal {
         // console.log("Inside setTerm");
         // console.log("key:", _key);
-        bytes32 hash = hashKeyId(_key, _templateId);
+        bytes32 hash = _hashKeyId(_key, _templateId);
         terms[hash] = _value;
         // console.log("key at line 211:", _key);
         // bytes32 keyHash = keccak256(abi.encodePacked(_key));
