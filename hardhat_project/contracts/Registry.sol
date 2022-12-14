@@ -216,15 +216,6 @@ contract Registry is Ownable {
         );
     }
 
-    // function checkUrls(
-    //     string memory _newtemplateUrl,
-    //     uint256 _templateId
-    // ) external view returns (bool) {
-    //     return
-    //         keccak256(bytes(_newtemplateUrl)) ==
-    //         keccak256(bytes(_templateUrl(_templateId)));
-    // }
-
     /// @notice This is an external function that calls an internal function to accept terms for a template on behalf of a signer without metadata.
     /// @dev This is an external function that calls an internal function to accept terms for a template on behalf of a signer without metadata.
     /// The terms are accepted on behalf of the the _signer without any metadata. The signer is checked against the signature.
@@ -246,7 +237,8 @@ contract Registry is Ownable {
 
     /// @notice This is an external function that calls an internal function to accept terms for a template on behalf of a signer without metadata.
     /// @dev This is an external function that calls an internal function to accept terms for a template on behalf of a signer without metadata.
-    /// The terms are accepted on behalf of the the _signer without any metadata. The signer is checked against the signature.
+    /// @dev The terms are accepted on behalf of the the _signer without any metadata.
+    /// @dev The signer is checked against the signature.
     /// @param _signer is the address of the user who is accepting the terms.
     /// @param _templateId is the id of the template for which the terms are being accepted.
     /// @param _newtemplateUrl is the new template url for the template for which the terms are being accepted.
@@ -266,18 +258,28 @@ contract Registry is Ownable {
         _acceptTerms(_signer, _templateId, _newtemplateUrl, _metadataUri);
     }
 
+    /// @notice This is an external function that calls an internal function to view the template url for a given template id with an ipfs prefix.
+    /// @dev This is an external function that calls an internal function to view the template url for a given template id with an ipfs prefix.
+    /// @param templateId is the id of the template for which the template url is being viewed.
     function templateUrl(
         uint256 templateId
     ) external view returns (string memory) {
         return _templateUrlWithPrefix(templateId, "ipfs://");
     }
 
+    /// @notice This is an internal function to view the template url for a given template id with an ipfs prefix.
+    /// @dev This is an internal function to view the template url for a given template id with an ipfs prefix.
+    /// @param templateId is the id of the template for which the template url is being viewed.
     function _templateUrl(
         uint256 templateId
     ) internal view returns (string memory) {
         return _templateUrlWithPrefix(templateId, "ipfs://");
     }
 
+    /// @notice This is an internal function to view the template url for a given template id with a given prefix.
+    /// @dev This is an internal function to view the template url for a given template id with a given prefix.
+    /// @param templateId is the id of the template for which the template url is being viewed.
+    /// @param prefix is the prefix for the template url.
     function _templateUrlWithPrefix(
         uint256 templateId,
         string memory prefix
@@ -300,32 +302,53 @@ contract Registry is Ownable {
         );
     }
 
+    /// @notice This is an external function that calls an internal function to view the template url for a given template id with a given prefix.
+    /// @dev This is an external function that calls an internal function to view the template url for a given template id with a given prefix.
+    /// @param templateId is the id of the template for which the template url is being viewed.
+    /// @param prefix is the prefix for the template url.
     function templateUrlWithPrefix(
         uint256 templateId,
         string memory prefix
-    ) public view returns (string memory) {
+    ) external view returns (string memory) {
         return _templateUrlWithPrefix(templateId, prefix);
     }
 
+    /// @notice This is an internal view function to view the renderer for a given template id.
+    /// @dev This is an internal function to view to the renderer for a given template id.
+    /// @dev It returns the global renderer if the template id does not have a renderer.
+    /// @param _tokenId is the id of the template for which the renderer is being viewed.
     function _renderer(uint256 _tokenId) internal view returns (string memory) {
         if (bytes(renderers[_tokenId]).length == 0) return _globalRenderer;
         else return renderers[_tokenId];
     }
 
+    /// @notice This is an internal view function to view the template URI for a given template id.
+    /// @dev This is an internal function to view to the template URI for a given template id.
+    /// @param _tokenId is the id of the template for which the template URI is being viewed.
     function _template(uint256 _tokenId) internal view returns (string memory) {
         return templates[_tokenId];
     }
 
+    /// @notice This is an internal function to set the global renderer.
+    /// @dev This is an internal function to set the global renderer.
+    /// @param _newGlobalRenderer is the new global renderer.
     function _setGlobalRenderer(string memory _newGlobalRenderer) internal {
         _globalRenderer = _newGlobalRenderer;
     }
 
+    /// @notice This is an external function to set the global renderer.
+    /// @dev This is an external function to set the global renderer. It can only be called by the owner of this contract.
+    /// @param _newGlobalRenderer is the new global renderer.
     function setGlobalRenderer(
         string memory _newGlobalRenderer
     ) external onlyOwner {
         _setGlobalRenderer(_newGlobalRenderer);
     }
 
+    /// @notice This is an internal function to set the template URI for a given template id.
+    /// @dev This is an internal function to set the template URI for a given template id. It emits a TemplateChanged event.
+    /// @param _templateId is the id of the template for which the template URI is being set.
+    /// @param _newTemplate is the new template URI.
     function _setTemplate(
         uint256 _templateId,
         string memory _newTemplate
@@ -335,6 +358,11 @@ contract Registry is Ownable {
         emit TemplateChanged(_templateId, _newTemplate);
     }
 
+    /// @notice This is an external function to set the template URI for a given template id.
+    /// @dev This is an external function to set the template URI for a given template id.
+    /// @dev It can only be called by the owner of the template.
+    /// @param _templateId is the id of the template for which the template URI is being set.
+    /// @param _newTemplate is the new template URI.
     function setTemplate(
         uint256 _templateId,
         string memory _newTemplate
@@ -342,6 +370,10 @@ contract Registry is Ownable {
         _setTemplate(_templateId, _newTemplate);
     }
 
+    /// @notice This is an external function to set the metadata for a given template id.
+    /// @dev This is an external function to set the metadata for a given template id. It can only be called by the owner of the template.
+    /// @param _templateId is the id of the template for which the metadata is being set.
+    /// @param _newMetadataUri is the new metadata URI.
     function setMetadataUri(
         uint256 _templateId,
         string memory _newMetadataUri
@@ -349,6 +381,10 @@ contract Registry is Ownable {
         _setMetadataUri(_templateId, _newMetadataUri);
     }
 
+    /// @notice This is an internal function to set the metadata for a given template id.
+    /// @dev This is an internal function to set the metadata for a given template id. It emits a MetadataUriChanged event.
+    /// @param _templateId is the id of the template for which the metadata is being set.
+    /// @param _newMetadataUri is the new metadata URI.
     function _setMetadataUri(
         uint256 _templateId,
         string memory _newMetadataUri
@@ -358,22 +394,28 @@ contract Registry is Ownable {
         emit MetadataUriChanged(_templateId, _newMetadataUri);
     }
 
+    /// @notice This is an internal function to set the terms for a given template id.
+    /// @dev This is an internal function to set the terms for a given template id. It emits a TermChanged event.
+    /// @param _templateId is the id of the template for which the terms are being set.
+    /// @param _key is the key of the term.
+    /// @param _value is the value of the term.
     function _setTerm(
         uint256 _templateId,
         string memory _key,
         string memory _value
     ) internal {
-        // console.log("Inside setTerm");
-        // console.log("key:", _key);
         bytes32 hash = _hashKeyId(_key, _templateId);
         terms[hash] = _value;
-        // console.log("key at line 211:", _key);
-        // bytes32 keyHash = keccak256(abi.encodePacked(_key));
-        // console.logBytes32(keyHash);
         lastTermChange[_templateId] = block.number;
         emit TermChanged(_templateId, _key, _value);
     }
 
+    /// @notice This is an external function to set the terms for a given template id.
+    /// @dev This is an external function to set the terms for a given template id.
+    /// @dev It can only be called by the owner of the template.
+    /// @param _templateId is the id of the template for which the terms are being set.
+    /// @param _key is the key of the term.
+    /// @param _value is the value of the term.
     function setTerm(
         uint256 _templateId,
         string memory _key,
@@ -382,6 +424,11 @@ contract Registry is Ownable {
         _setTerm(_templateId, _key, _value);
     }
 
+    /// @notice This is an internal function to create a new template.
+    /// @dev This is an internal function to create a new template. It emits a TemplateCreated event and returns the template id.
+    /// @param _signer is the address of the creator of the said template.
+    /// @param _templateUri is the URI of the template.
+    /// @return templateId is the id of the template created.
     function _mintTemplate(
         address _signer,
         string memory _templateUri
@@ -395,14 +442,22 @@ contract Registry is Ownable {
         return templateId;
     }
 
-    // external function to call mintTemplate by thrid party
+    /// @notice This is an external function to create a new template.
+    /// @dev This is an external function to create a new template. It creates it on behalf of the caller and returns the template id.
+    /// @param _templateUri is the URI of the template.
+    /// @return templateId is the id of the template created.
     function mintTemplate(
         string memory _templateUri
     ) external returns (uint256) {
         return _mintTemplate(msg.sender, _templateUri);
     }
 
-    // external function to call mintTemplate by metaSigner
+    /// @notice This is an external function to create a new template that can only be called by a meta signer.
+    /// @dev This is an external function to create a new template that can only be called by a meta signer.
+    /// @dev It creates it on behalf of the caller and returns the template id.
+    /// @param _templateUri is the URI of the template.
+    /// @param _owner is the address of the owner of the template.
+    /// @return templateId is the id of the template created.
     function mintTemplate(
         string memory _templateUri,
         address _owner
@@ -410,21 +465,9 @@ contract Registry is Ownable {
         return _mintTemplate(_owner, _templateUri);
     }
 
-    // external function to call mintTemplate on behalf of a signer
-    // function mintTemplateFor(
-    //     address _signer,
-    //     string memory _templateUri,
-    //     bytes memory _signature
-    // ) external onlyMetaSigner returns (uint256) {
-    //     bytes32 hash = ECDSA.toEthSignedMessageHash(bytes(_templateUri));
-    //     address _checkedSigner = ECDSA.recover(hash, _signature);
-    //     require(_checkedSigner == _signer);
-    //     return _mintTemplate(_signer, _templateUri);
-    // }
-
     /// @notice Adds a meta signer to the list of signers that can accept terms on behalf of the signer.
-    /// @dev This function adds a meta signer to the list of signers that can accept terms on behalf of the signer.
-    /// @dev This function is only available to the owner of the contract.
+    /// @dev This external function calls an internal function that adds a meta signer to the list of signers.
+    /// @dev This function is only available to the metasigners and owner of this contract.
     /// @param _signer The address of the signer that can accept terms on behalf of the signer.
     function approveMetaSigner(
         address _signer,
@@ -442,12 +485,15 @@ contract Registry is Ownable {
 
     /// @notice Returns whether the address is allowed to accept terms on behalf of the signer.
     /// @dev This function returns whether the address is allowed to accept terms on behalf of the signer.
-    /// @param _signer The address of the signer that can accept terms on behalf of the signer.
-    /// @return Whether the address is allowed to accept terms on behalf of the signer.
+    /// @param _signer The address of the signer that is being checked to see if it can accept terms on behalf of the signer.
+    /// @return A boolean value indicating whether the address is allowed to accept terms on behalf of the signer.
     function isMetaSigner(address _signer) public view returns (bool) {
         return _metaSigners[_signer];
     }
 
+    /// @notice This modifier requires that the msg.sender is either the owner of the template or an approved metasigner.
+    /// @dev This modifier requires that the msg.sender is either the owner of the template or an approved metasigner.
+    /// @param _templateId is the id of the template.
     modifier onlyTemplateOwner(uint256 _templateId) {
         require(
             (_templateOwners[_templateId] == _msgSender()) ||
@@ -457,7 +503,8 @@ contract Registry is Ownable {
         _;
     }
 
-    /// @notice This modifier requires that the msg.sender is either the owner of the contract or an approved metasigner
+    /// @notice This modifier requires that the msg.sender is either the owner of the contract or an approved metasigner.
+    /// @dev This modifier requires that the msg.sender is either the owner of the contract or an approved metasigner.
     modifier onlyMetaSigner() {
         require(
             _metaSigners[_msgSender()] || owner() == _msgSender(),
