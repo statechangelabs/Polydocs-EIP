@@ -1,15 +1,12 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-// Uncomment this line to use console.log
-import "hardhat/console.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 contract Registry is Ownable {
-    // string[] public templates;
     using Counters for Counters.Counter;
     Counters.Counter private ids;
 
@@ -132,7 +129,7 @@ contract Registry is Ownable {
     function term(
         uint256 templateId,
         string memory key
-    ) public view returns (string memory) {
+    ) external view returns (string memory) {
         bytes32 hash = _hashKeyId(key, templateId);
         return terms[hash];
     }
