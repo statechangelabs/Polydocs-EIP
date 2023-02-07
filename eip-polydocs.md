@@ -47,219 +47,203 @@ Self-driving cars will be really expensive. Leasing them will probably be import
 ## Specification
 
 ```solidity
-//SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.9;
 
-pragma solidity ^0.8.0;
-
-/// @title Time Limited Tokens
-/// @notice This interface describes all the events and functions that must
-/// be implemented in order to create a Time Limited Token
-
-interface TimeLimitedToken {
-    /// @notice The Term structure describes a lease
-    /// @param lessee is the lessee for the duration of the lease
-    /// @param tokenId is the token for the said lease
-    /// @param startTime is the start time of the lease
-    /// @param endTime is the end time of the lease
-    struct Term {
-        address lessee;
-        uint256 tokenId;
-        uint256 startTime;
-        uint256 endTime;
-    }
-
-    /// @notice This event is emitted when a new lease is assigned by any mechanism
-    /// @param _tokenId of the asset
-    /// @param _lessee is the address to which the lease is assigned
-    /// @param _start is the start time of the lease
-    /// @param _end is the end of the lease
-    event Leased(
-        uint256 indexed _tokenId,
-        address indexed _lessee,
-        uint256 _start,
-        uint256 _end
+interface IRegistry {
+    /// @notice This event is emitted when the terms for a template are accepted.
+    /// @dev This event is emitted when the terms for a template are accepted.
+    /// @param _templateId is the id of the tempalte for which the terms are being accepted.
+    /// @param _user is the user who is accepting the terms.
+    /// @param _templateUri is the URI of the template.
+    /// @param _metadataUri is the URI of the metadata.
+    event AcceptedTerms(
+        uint256 indexed _templateId,
+        address indexed _user,
+        string _templateUri,
+        string _metadataUri
     );
 
-    /// @notice This event is emitted when a lease is unleased by any mechanism
-    /// @param _tokenId of the asset that is being unleased
-    /// @param _lessee is the lessee of the asset to unlease from
-    /// @param _start is the start time of the lease that is unleased
-    /// @param _end is the end of the lease of the lease that is unleased
-    event Unleased(
-        uint256 indexed _tokenId,
-        address indexed _lessee,
-        uint256 _start,
-        uint256 _end
+    /// @notice This event is emitted when the global renderer is updated.
+    /// @dev This event is emitted when the global renderer is updated.
+    /// @param _renderer is the new renderer.
+    event GlobalRendererChanged(string indexed _renderer);
+
+    /// @notice Event emitted when a new token term is added.
+    /// @dev Event emitted when a new token term is added.
+    /// @param _term is the term being added to the contract.
+    /// @param _templateId is the token id of the token for which the term is being added.
+    /// @param _value is the value of the term being added to the contract.
+    event TermChanged(uint256 indexed _templateId, string _term, string _value);
+
+    /// @notice This event is emitted when the global template is updated.
+    /// @dev This event is emitted when the global template is updated.
+    /// @param _template The new template.
+    /// @param _templateId The token id of the token for which the template is being updated.
+    event TemplateChanged(uint256 indexed _templateId, string _template);
+
+    /// @notice This event is emitted when the metadata of the template is updated.
+    /// @dev This event is emitted when the metadata of the template is updated.
+    /// @param _templateId The token id of the token for which the metadata is being updated.
+    /// @param _metadataUri The new metadata URI.
+    event MetadataUriChanged(uint256 indexed _templateId, string _metadataUri);
+
+    /// @notice This event is emitted when a new template is created.
+    /// @dev This event is emitted when a new template is created.
+    /// @param _templateId The id of the template created.
+    /// @param _template is the URI of the template created.
+    /// @param _owner is the owner of the template.
+    event TemplateCreated(
+        uint256 indexed _templateId,
+        string _template,
+        address _owner
     );
 
-    /// @notice This function returns the lessee of the tokenId for a given block
-    /// @dev Blocks or Timestamp can be abstracted to hours, days, etc based on business logic
-    /// @param _tokenId is the tokenId for which are checking the lesseOf
-    /// @param _blockOrTimestamp is the block number  or timestamp at which we are checking who the lessee is
-    /// @return address is the address that has the lease of the the _tokenId at _blockOrTimestamp
-    function lesseeOf(uint256 _tokenId, uint256 _blockOrTimestamp)
-        external
-        view
-        returns (address);
+    /// @notice This function returns the value of a term for a template.
+    /// @dev This function returns the value of a term for a template given its template id and key. The key is the term name.
+    /// Hash of the key and template id is used to get the value of the term.
+    /// @param templateId is the id of the template for which the term is being returned.
+    /// @param key is the key for which the value is being looked up.
+    /// @return Returns a string value of the term.
+    function term(
+        uint256 templateId,
+        string memory key
+    ) external view returns (string memory);
 
-    /// @notice This function returns a lease for a given a tokenId and block
-    /// @param _tokenId is the token for which the lease is being checked
-    /// @param _blockOrTimestamp is the the block number or timestamp at which we are checking the lease
-    /// @return Term is the lease being returned
-    function getLease(uint256 _tokenId, uint256 _blockOrTimestamp)
-        external
-        view
-        returns (Term memory);
-
-    /// @notice This function returns an array of leases (if any) for a given tokenid
-    /// @param _tokenId is the token for which the leases are being returned
-    /// @return Term[] is the array of leases
-    function getLeases(uint256 _tokenId) external view returns (Term[] memory);
-
-    /// @notice This function returns an array of leases given an address for the lessee
-    /// @param _address is the lessee
-    /// @return Term[] is the array of leases
-    function getLeases(address _address) external view returns (Term[] memory);
-
-    /// @notice This function checks if a lease is available for a tokenId
-    /// @param _tokenId is the token for which we are checking if a lease is available
-    /// @param _start is the start time of the lease we are checking
-    /// @param _end is the end time of the lease we are checking
-    /// @return Returns true if a lease is available else false
-    function isLeaseAvailable(
-        uint256 _tokenId,
-        uint256 _start,
-        uint256 _end
+    /// @notice This is an external function that calls an internal function to check if the terms for a template have been accepted by a user.
+    /// @dev This is an external function that calls an internal function to check if the terms for a template have been accepted by a user (_signer).
+    /// @param _signer is the address of the user for which the acceptance of the terms are being checked.
+    /// @param _templateId is the id of the template for which the acceptance of the terms are being checked.
+    /// @return Returns a boolean value indicating whether the terms have been accepted or not.
+    function acceptedTerms(
+        address _signer,
+        uint256 _templateId
     ) external view returns (bool);
 
-    /// @notice This function transfers the lease from the owner/current lessee/_operator to another
-    /// address for a certain token for a given time frame
-    /// @param _addressTo is the address to which the lease is being assigned
-    /// @param _start is the start time of the lease
-    /// @param _end is the end time of the lease
-    /// @param _data Additional data with no specified format, sent in call to `_to`
-    function lease(
-        address _addressTo,
-        uint256 _tokenId,
-        uint256 _start,
-        uint256 _end,
-        bytes memory _data
+    /// @notice This is an external function that calls an internal function to accept terms for a template without metadata.
+    /// @dev This is an external function that calls an internal function to accept terms for a template.
+    /// The terms are accepted on behalf of the the msg.sender without any metadata.
+    /// @param _templateId is the id of the template for which the terms are being accepted.
+    /// @param _newTemplateUrl is the new template url for the template for which the terms are being accepted.
+    function acceptTerms(
+        uint256 _templateId,
+        string memory _newTemplateUrl
     ) external;
 
-    /// @notice This function transfers the lease from the owner/current lessee/_operator to another
-    /// address for a certain token for a given time frame
-    /// @dev Calling this version of lease is the same as calling the above one with empty _data field
-    /// @param _addressTo is the address to which the lease is being assigned
-    /// @param _start is the start time of the lease
-    /// @param _end is the end time of the lease
-    function lease(
-        address _addressTo,
-        uint256 _tokenId,
-        uint256 _start,
-        uint256 _end
+    /// @notice This is an external function that calls an internal function to accept terms for a template with metadata.
+    /// @dev This is an external function that calls an internal function to accept terms for a template.
+    /// The terms are accepted on behalf of the the msg.sender with metadata.
+    /// @param _templateId is the id of the template for which the terms are being accepted.
+    /// @param _newTemplateUrl is the new template url for the template for which the terms are being accepted.
+    /// @param _metdataUri is the metadata URI for the template for which the terms are being accepted.
+    function acceptTerms(
+        uint256 _templateId,
+        string memory _newTemplateUrl,
+        string memory _metdataUri
     ) external;
 
-    /// @notice This function unleases a token for the duration specified
-    /// @dev LeaseCancelled event is emitted
-    /// @param _tokenId is the token that is being unleased
-    /// @param _start is the start time of the duration being unleased
-    /// @param _end is the end time of the duration being unleased
-    /// @param _data Additional data with no specified format, sent in call to `_to`
-    function unlease(
-        uint256 _tokenId,
-        uint256 _start,
-        uint256 _end,
-        bytes memory _data
+    /// @notice This is an external function that calls an internal function to accept terms for a template on behalf of a signer without metadata.
+    /// @dev This is an external function that calls an internal function to accept terms for a template on behalf of a signer without metadata.
+    /// The terms are accepted on behalf of the the _signer without any metadata. The signer is checked against the signature.
+    /// @param _signer is the address of the user who is accepting the terms.
+    /// @param _templateId is the id of the template for which the terms are being accepted.
+    /// @param _newtemplateUrl is the new template url for the template for which the terms are being accepted.
+    /// @param _signature is the signature of the signer for the terms acceptance.
+    function acceptTermsFor(
+        address _signer,
+        string memory _newtemplateUrl,
+        uint256 _templateId,
+        bytes memory _signature
     ) external;
 
-    /// @notice This function unleases a token for the duration specified
-    /// @dev LeaseCancelled event is emitted, Calling this version of unlease
-    /// is the same as calling the above one with empty _data field
-    /// @param _tokenId is the token that is being unleased
-    /// @param _start is the start time of the duration being unleased
-    /// @param _end is the end time of the duration being unleased
-    function unlease(
-        uint256 _tokenId,
-        uint256 _start,
-        uint256 _end
+    /// @notice This is an external function that calls an internal function to accept terms for a template on behalf of a signer without metadata.
+    /// @dev This is an external function that calls an internal function to accept terms for a template on behalf of a signer without metadata.
+    /// @dev The terms are accepted on behalf of the the _signer without any metadata.
+    /// @dev The signer is checked against the signature.
+    /// @param _signer is the address of the user who is accepting the terms.
+    /// @param _templateId is the id of the template for which the terms are being accepted.
+    /// @param _newtemplateUrl is the new template url for the template for which the terms are being accepted.
+    /// @param _signature is the signature of the signer for the terms acceptance.
+    function acceptTermsFor(
+        address _signer,
+        string memory _newtemplateUrl,
+        string memory _metadataUri,
+        uint256 _templateId,
+        bytes memory _signature
     ) external;
 
-    /// @notice This function returns the maximum lease duration set
-    /// @return Maximum lease duration
-    function MAX_LEASE_DURATION() external view returns (uint256); // 60 days
+    /// @notice This is an external function that calls an internal function to view the template url for a given template id with an ipfs prefix.
+    /// @dev This is an external function that calls an internal function to view the template url for a given template id with an ipfs prefix.
+    /// @param templateId is the id of the template for which the template url is being viewed.
+    function templateUrl(
+        uint256 templateId
+    ) external view returns (string memory);
 
-    /// @notice This function returns the minimum lease duration set
-    /// @return Minimum lease duration
-    function MIN_LEASE_DURATION() external view returns (uint256); // 1 day in 30s blocks, or 86400 for days
+    /// @notice This is an external function that calls an internal function to view the template url for a given template id with a given prefix.
+    /// @dev This is an external function that calls an internal function to view the template url for a given template id with a given prefix.
+    /// @param templateId is the id of the template for which the template url is being viewed.
+    /// @param prefix is the prefix for the template url.
+    function templateUrlWithPrefix(
+        uint256 templateId,
+        string memory prefix
+    ) external view returns (string memory);
 
-    /// @notice This function returns if Timestamp is being used for calculation
-    /// @return Returns true if Timestamp is being used else false (Block)
-    function USE_TIMESTAMP() external view returns (bool); // Use timestamp instead of block number
+    /// @notice This is an external function to set the global renderer.
+    /// @dev This is an external function to set the global renderer. It can only be called by the owner of this contract.
+    /// @param _newGlobalRenderer is the new global renderer.
+    function setGlobalRenderer(string memory _newGlobalRenderer) external;
 
-    /// @notice This event is emitted when a lease is approved by the current lessee or owner to a future lessee
-    /// @param _to is the specific address that is approved for the lease
-    /// @param _tokenId is the tokenid of the asset for which lease is being approved
-    /// @param _start is the start time for the lease approved
-    /// @param _end is the end time for the lease approved
-    event LeaseApproval(
-        address indexed _to,
-        uint256 indexed _tokenId,
-        uint256 _start,
-        uint256 _end
-    );
-
-    /// @notice This event is emitted when the owner sets the lease approval for all
-    /// @param _from is the address that approves the lease for everyone (owner address)
-    /// @param _operator is the address of the operator/agent that is allowed to manage all the leases of the owner
-    /// @param _approved is whether to approve the _operator
-    event LeaseApprovalForAll(
-        address indexed _from,
-        address indexed _operator,
-        bool _approved
-    );
-
-    /// @notice This function is called when we are approving a lease for a tokenID for
-    /// a given time frame and for a given address
-    /// @param _addressTo is the address to approve for the said lease
-    /// @param _tokenId is the token for which the lease will be approved
-    /// @param _start is the start time of the approved lease
-    /// @param _end is the end time of the approaved lease
-
-    function approveLease(
-        address _addressTo,
-        uint256 _tokenId,
-        uint256 _start,
-        uint256 _end
+    /// @notice This is an external function to set the template URI for a given template id.
+    /// @dev This is an external function to set the template URI for a given template id.
+    /// @dev It can only be called by the owner of the template.
+    /// @param _templateId is the id of the template for which the template URI is being set.
+    /// @param _newTemplate is the new template URI.
+    function setTemplate(
+        uint256 _templateId,
+        string memory _newTemplate
     ) external;
 
-    /// @notice Given a token and lease start and end time, it returns the address
-    /// that is approved for the lease
-    /// @param _tokenId is the token for which we are checking the lease
-    /// @param _start is the start time of the lease
-    /// @param _end is the end time of the lease
-    function getLeaseApproved(
-        uint256 _tokenId,
-        uint256 _start,
-        uint256 _end
-    ) external view returns (address);
+    /// @notice This is an external function to set the metadata for a given template id.
+    /// @dev This is an external function to set the metadata for a given template id. It can only be called by the owner of the template.
+    /// @param _templateId is the id of the template for which the metadata is being set.
+    /// @param _newMetadataUri is the new metadata URI.
+    function setMetadataUri(
+        uint256 _templateId,
+        string memory _newMetadataUri
+    ) external;
 
-    /// @notice Enable or disable approval for a third party ("operator") to manage
-    ///  all of `msg.sender`'s leases
-    /// @dev Authorizer(msg.sender) must be the owner
-    /// @param _operator the address of a third party that can manage all the leases
-    /// on behalf of the owner
-    /// @param _approved True if the operator is approved, false to revoke approval
-    function setLeaseApprovalForAll(address _operator, bool _approved) external;
+    /// @notice This is an external function to set the terms for a given template id.
+    /// @dev This is an external function to set the terms for a given template id.
+    /// @dev It can only be called by the owner of the template.
+    /// @param _templateId is the id of the template for which the terms are being set.
+    /// @param _key is the key of the term.
+    /// @param _value is the value of the term.
+    function setTerm(
+        uint256 _templateId,
+        string memory _key,
+        string memory _value
+    ) external;
 
-    /// This function checks if all the leases are approved
-    /// @param _owner is the address for whom to the lease belongs to
-    /// @param _operator the address of a third party that can manage all the leases
-    /// on behalf of the owner
-    function isLeaseApprovedForall(address _owner, address _operator)
-        external
-        view
-        returns (bool);
+    /// @notice This is an external function to create a new template.
+    /// @dev This is an external function to create a new template. It creates it on behalf of the caller and returns the template id.
+    /// @param _templateUri is the URI of the template.
+    /// @return templateId is the id of the template created.
+    function mintTemplate(
+        string memory _templateUri
+    ) external returns (uint256);
+
+    /// @notice This is an external function to create a new template that can only be called by a meta signer.
+    /// @dev This is an external function to create a new template that can only be called by a meta signer.
+    /// @dev It creates it on behalf of the caller and returns the template id.
+    /// @param _templateUri is the URI of the template.
+    /// @param _owner is the address of the owner of the template.
+    /// @return templateId is the id of the template created.
+    function mintTemplate(
+        string memory _templateUri,
+        address _owner
+    ) external returns (uint256);
 }
+
 ```
 
 **Note**: The key words “MUST”, “MUST NOT”, “REQUIRED”, “SHALL”, “SHALL NOT”, “SHOULD”, “SHOULD NOT”, “RECOMMENDED”, “MAY”, and “OPTIONAL” in this document are to be interpreted as described in RFC 2119.
