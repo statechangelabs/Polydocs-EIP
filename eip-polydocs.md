@@ -1,14 +1,14 @@
 ---
 eip: <to be assigned>
 title: Polydocs
-description: Expressing and transferring leases to deeds
+description: Immutable Document Signing on the Blockchain
 author: Ray Deck ([@rhdeck](https://github.com/rhdeck)), Akshay Rakheja ([@akshay-rakheja](https://github.com/akshay-rakheja))
 discussions-to: https://github.com/statechangelabs/Polydocs/issues
 status: Draft
-type: Standards
-category (*only required for Standards Track): ERC
-created: 2022-12-15
-requires: 165
+type: Standards Track
+category (*only required for Standards Track): Interface
+created: 2023-2-08
+requires (optional): <EIP number(s)>
 ---
 
 ## Abstract
@@ -30,7 +30,7 @@ Enter Polydocs: We have created a smart document and added meta-signing that mak
 - Communities need agreement on government by norms and rules.
 - KYC/AML documents that need to be signed by both parties.
 
-## Motivation
+## Motivation (Optional)
 
 Smart contracts are increasingly used for managing the allocation of digital assets. These assets are more complex than the cash or deeds we sometimes use for analogies. Intellectual property involves rights and responsibilities. Financial instruments require acceptance on both sides. Communities need agreement on government by norms and rules.
 
@@ -250,11 +250,11 @@ Suddenly, financial organizations, with access to a ton of capital, have the com
 
 By creating a framework to sign smart documents and demystify smart contracts, Polydocs can help bridge the gap between traditional industries and crypto ecosystem.
 
-## Backwards Compatibility
+## Backwards Compatibility (Optional)
 
-## Test Cases
+## Test Cases (Optional)
 
-## Reference Implementation
+## Reference Implementation (Optional)
 
 [gmSign](https://admin.gmsign.xyz/) was built during HelloSign Hackathon in 2022. It lets you mint NFT's with "Can't Be Evil" licenses from a16z. gmSign connects HelloSign with decentralized applications by enabling signatures over the HelloSign API which, on callback, makes a gasless record of that signature on-chain so that there is clarity as to who signed which agreement when. This record of sign is maintained by Polydocs in a public registry of signed documents.
 
@@ -264,19 +264,7 @@ By creating a framework to sign smart documents and demystify smart contracts, P
 - [Admin App](https://admin.polydocs.xyz) is a gasless admin system for creating, deploying and managing contracts with polydocs agreements. 
 - A known templates registry of documents hosted on IPFS.
 
-## Security and Implementation Considerations
-
-### Gas Consumption
-
-Time-limited tokens are more mathematically involved because of the need to compare potentially quite fine distinctions (e.g. to the second or the block) in time windows. Our standard creates the opportunity to reduce that impact through setting a MIN_LEASE_LENGTH and a START_TIME that, when combined, mean the effective number of combinations falls dramatically. E.g. if the MIN_LEASE_LENGTH is 86,400s, and the START_TIME is midnight UTC-7, only whole days are calculated, allowing internal storage to be much simpler.
-
-### Lessee rights vs owner rights
-
-Property rights often consider ownership to be "absolute," but lessee rights are not. Enumerating and managing what it means to be a lessee without blindly just checking "lesseeOf" will be important to connecting on-chain knowledge to real-world considerations.
-
-### Transferability
-
-In a specific case of the preceding, it is entirely probable that a property owner will not want a lessee to further subdivide or reassign their rights. This is common in many residential real estate situations. This proposal would allow that kind of control if the contract considers it explicitly.
+## Security and Implementation Considerations (Required)
 
 ## Copyright
 
