@@ -11,40 +11,36 @@ created: 2022-12-15
 requires: 165
 ---
 
-## Simple Summary
+## Abstract
 
-This standard describes a simple, supple interface for expressing and transferring time-limited rights or obligations, also known as leases.
+The following standard allows for the implementation of a standard API for document signing using smart contracts. This standard provides basic functionality to track and sign documents.
+
+Right now, financial assets and intellectual property are accompanied with a legal framework of usage rights. Licenses about these rights are expressed and subjected to the terms and conditions that govern how users own or interact with a product or platform.
+
+Everyone’s familiar with the standardized “agree to the following terms and conditions” that accompany the use of various websites and products.
+
+But how do such licenses exist on a blockchain today?
+
+It’s a thorny problem, especially for complex financial products.
+
+Enter Polydocs: We have created a smart document and added meta-signing that makes it easy and safe to own or allocate complicated intellectual, financial, and rights-oriented digital assets on the blockchain. These assets are more complex than the cash or deeds we sometimes use for analogies. Some of the most common examples of these assets are:
+
+- NFT's with intellectual property that involve rights and responsibilities (eg: Music NFT's, RWA's).
+- Financial instruments such as SMB loans require acceptance on both sides.
+- Communities need agreement on government by norms and rules.
 
 ## Motivation
 
-Time is the ultimate scarce resource. We have less of it every second. Time slicing is critical to ideas of fractional possession - allocating rights for a finite period allows resources to generate more value for more humans without requiring their growth or change.
+Smart contracts are increasingly used for managing the allocation of digital assets. These assets are more complex than the cash or deeds we sometimes use for analogies. Intellectual property involves rights and responsibilities. Financial instruments require acceptance on both sides. Communities need agreement on government by norms and rules.
 
-The surging popularity of ERC721 tokens shows the opportunity for clear, simple standards for allocating property rights on the blockchain. Critical to any idea of property rights is the ability to lend or lease an asset for a limited period of time. Blockchain has a unique opportunity to permit these transactions without trust or a third party guarantor because of the public, immutable record.
-
-However, ERC721 and related standards do not provide functionality to enable leasing of NFTs or other assets for a specific period.
-
-Allocating time-based rights in a standard that lets people know who possesses a given asset, as separate from ultimate ownership. The question is who has possession at a specific point in time. For example, the tenant/occupant of a flat can change between months or years, while ownership is indefinite. This standard looks at the question of allocating those rights, who one can allocate them from (e.g. subletting), and looking into the future to understand who will have those rights for making future use case decisions.
+The articulation and acceptance of these terms should be a first-class consideration for those creating digital assets and services. That's why we made Polydocs.
 
 ## Use Cases
 
-### Electronic Apartment Lock - "Web3-n-B"
-
-People lease apartments from property owners. Sometimes, we want to re-lease access to that apartment to a third party, a la as an AirBnB host. We want to give access to the apartment to the sub-letter for a specific period of time, and the sub-letter should expect that they will have privacy, e.g. the original tenant does not intrude during this period. The tenant has a lease from the property owner that might last a year. The goal is to tell the apartment lock to allow that tenant access during their term, and to transfer that access to the subletter during their (shorter) stay. A blockchain-powered lock could grant access based on who has the rights to that apartment at that point in time. The contract will allow other sublet arrangements to happen, and because it is on the contract, everything is transparent to the original owner, along with the potential for payment to the original owner for the privilege of making these sublet arrangements.
-
-### Blockchain-powered automobile ignition - "EthCar"
-
-Self-driving cars will be really expensive. Leasing them will probably be important for people to affordably get access. But we don’t need our car all the time. Leasing time windows to people for use of the vehicle will allow people to get access to the car (potentially even telling it to drive to one’s location) for a fixed period of time. All transactions for these rides would run on the chain, and if you get the ride to a location, and you do not need the ride until you are done, you can re-lease time on the vehicle to another lessee in a re-lease transaction. Now there is no wasted “downtime” on the vehicle. The vehicle gates access based on whether the current occupant’s address (e.g. msgSender) is the leaseholder at that point in time.
-
-### Other potential use cases
-
-- Renting streaming media
-- Library books
-- Staking financial assets
-- Land deals
-- Travel arrangements
-- Seats at sports venues
 
 ## Specification
+
+**Note**: The key words “MUST”, “MUST NOT”, “REQUIRED”, “SHALL”, “SHALL NOT”, “SHOULD”, “SHOULD NOT”, “RECOMMENDED”, “MAY”, and “OPTIONAL” in this document are to be interpreted as described in RFC 2119.
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -246,7 +242,7 @@ interface IRegistry {
 
 ```
 
-**Note**: The key words “MUST”, “MUST NOT”, “REQUIRED”, “SHALL”, “SHALL NOT”, “SHOULD”, “SHOULD NOT”, “RECOMMENDED”, “MAY”, and “OPTIONAL” in this document are to be interpreted as described in RFC 2119.
+
 
 ## Rationale
 
