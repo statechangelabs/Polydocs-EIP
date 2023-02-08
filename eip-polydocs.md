@@ -25,18 +25,16 @@ It’s a thorny problem, especially for complex financial products.
 
 Enter Polydocs: We have created a smart document and added meta-signing that makes it easy and safe to own or allocate complicated intellectual, financial, and rights-oriented digital assets on the blockchain. These assets are more complex than the cash or deeds we sometimes use for analogies. Some of the most common examples of these assets are:
 
-- NFT's with intellectual property that involve rights and responsibilities (eg: Music NFT's, RWA's).
+- NFT's with intellectual property that involve rights and responsibilities (eg: Music NFT's, real world assets like real estate).
 - Financial instruments such as SMB loans require acceptance on both sides.
 - Communities need agreement on government by norms and rules.
+- KYC/AML documents that need to be signed by both parties.
 
 ## Motivation
 
 Smart contracts are increasingly used for managing the allocation of digital assets. These assets are more complex than the cash or deeds we sometimes use for analogies. Intellectual property involves rights and responsibilities. Financial instruments require acceptance on both sides. Communities need agreement on government by norms and rules.
 
 The articulation and acceptance of these terms should be a first-class consideration for those creating digital assets and services. That's why we made Polydocs.
-
-## Use Cases
-
 
 ## Specification
 
@@ -242,21 +240,29 @@ interface IRegistry {
 
 ```
 
-
-
 ## Rationale
 
-We believe that industry and type-specific interfaces will become common to make dapps easier to build in specific industries - real estate, transportation, finance.
+Say a financial institution wants to provide more crypto-native offerings or finance Web3 businesses, but they’re legally required to perform Know-Your-Customer (KYC) checks.
 
-There is some prior art that if anything reinforces the gap in standards for this basic rights management need.Transferring ownership is the only way to “lend,” and that leads to a requirement for massive collateralization (see renft.io). This defeats the affordability aspect of a lease arrangement: one must basically be able to afford to buy the house outright before being able to lease it! In another example, Cryptopunks uses a “white space” function to implement a bespoke method for leasing their NFTs for a fixed 99-day period. (cryptopunks.rent)
+After a user enters the required information for KYC (which, in the future, can be backed by privacy-oriented solutions like zk-powered PolygonID), the user can attest to having performed the KYC, with a link to the documentation provided by Polydocs.
 
-## Backwards Compatibility and Test Cases
+Suddenly, financial organizations, with access to a ton of capital, have the compliance attestations and legal framework to avert risk. They can begin to open up capital to users have been de-risked using this KYC/AML process.
 
-This is designed as an ERC with the lease keyword added to all functions in order to prevent name conflicts.
+By creating a framework to sign smart documents and demystify smart contracts, Polydocs can help bridge the gap between traditional industries and crypto ecosystem.
+
+## Backwards Compatibility
+
+## Test Cases
 
 ## Reference Implementation
 
-[Non-Fungible Travel Services](./nftravel) lets you lease airplanes for future travel. The owners of the airplanes approve leases by travellers in certain future dates. The implementation cuts down on potential gas costs by leveraging the idea of rounding all lease units to complete calendar days (based on midnight-midnight UTC-5).
+[gmSign](https://admin.gmsign.xyz/) was built during HelloSign Hackathon in 2022. It lets you mint NFT's with "Can't Be Evil" licenses from a16z. gmSign connects HelloSign with decentralized applications by enabling signatures over the HelloSign API which, on callback, makes a gasless record of that signature on-chain so that there is clarity as to who signed which agreement when. This record of sign is maintained by Polydocs in a public registry of signed documents.
+
+[Polydocs](https://polydocs.xyz/) was built during HackFS and Polygon's Buidl It Hackathons in 2022. It comprises of 3 core parts:
+
+- [Signing App](https://sign.polydocs.xyz) is a gasless mini-app to enable a customer to accept the terms of an agreement and get recorded on the blockchain using a metatransaction.
+- [Admin App](https://admin.polydocs.xyz) is a gasless admin system for creating, deploying and managing contracts with polydocs agreements. 
+- A known templates registry of documents hosted on IPFS.
 
 ## Security and Implementation Considerations
 
