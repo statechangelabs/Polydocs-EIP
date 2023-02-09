@@ -6,9 +6,9 @@ author: Ray Deck ([@rhdeck](https://github.com/rhdeck)), Akshay Rakheja ([@aksha
 discussions-to: https://github.com/statechangelabs/Polydocs/issues
 status: Draft
 type: Standards Track
-category (*only required for Standards Track): Interface
+category (*only required for Standards Track): ERC
 created: 2023-2-08
-requires (optional): <EIP number(s)>
+requires (optional): 165
 ---
 
 ## Abstract
@@ -252,7 +252,7 @@ By creating a framework to sign smart documents and demystify smart contracts, P
 
 ## Backwards Compatibility (Optional)
 
-## Test Cases (Optional)
+Function names are all distinct from existing ERC standards as of February 8th, 2023.
 
 ## Reference Implementation (Optional)
 
@@ -265,6 +265,17 @@ By creating a framework to sign smart documents and demystify smart contracts, P
 - A known templates registry of documents hosted on IPFS.
 
 ## Security and Implementation Considerations (Required)
+
+### Legal meaning of wallet based signatures
+
+The legal meaning of a signature is a complex topic. In the US, the Uniform Electronic Transactions Act (UETA) defines a signature as "an electronic sound, symbol, or process attached to or logically associated with a record and executed or adopted by a person with the intent to sign the record." This definition is broad enough to include a signature in a blockchain transaction, but it is not clear whether it would be considered a valid signature for a contract. The UETA also states that "a signature is not invalid solely because it is in electronic form or because it is an electronic sound, symbol, or process." This means that a signature in a blockchain transaction is not necessarily invalid, but it is not clear whether it would be considered a valid signature for a contract.
+
+We are using mathmatical signatures to express intent to sign a document. Wallets are usually pseudonymous and the signature is not necessarily tied to a person. This means that the signature is not necessarily invalid, but it is not clear whether it would be considered a valid signature for a contract.
+
+### Privacy leak of confidential information
+
+Anything that is signed on a public blockchain is visible to everyone. This means that if a user signs a document that contains confidential information, that information will be visible to everyone.
+There is an interesting opportunity for people who are public about their Wallet identity (eg: people with ENS domains) to associate one's identity with one's adddress which would signficantly decrease the barrier to entry with KYC type contracts and increase the legality of wallet based signatures.
 
 ## Copyright
 
