@@ -5,8 +5,9 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "./interfaces/IRegistry.sol";
 
-contract Registry is Ownable {
+contract Registry is Ownable, IRegistry {
     using Counters for Counters.Counter;
     Counters.Counter private ids;
 
@@ -53,47 +54,47 @@ contract Registry is Ownable {
     /// @param _user is the user who is accepting the terms.
     /// @param _templateUri is the URI of the template.
     /// @param _metadataUri is the URI of the metadata.
-    event AcceptedTerms(
-        uint256 indexed _templateId,
-        address indexed _user,
-        string _templateUri,
-        string _metadataUri
-    );
+    // event AcceptedTerms(
+    //     uint256 indexed _templateId,
+    //     address indexed _user,
+    //     string _templateUri,
+    //     string _metadataUri
+    // );
 
-    /// @notice This event is emitted when the global renderer is updated.
-    /// @dev This event is emitted when the global renderer is updated.
-    /// @param _renderer is the new renderer.
-    event GlobalRendererChanged(string indexed _renderer);
+    // /// @notice This event is emitted when the global renderer is updated.
+    // /// @dev This event is emitted when the global renderer is updated.
+    // /// @param _renderer is the new renderer.
+    // event GlobalRendererChanged(string indexed _renderer);
 
-    /// @notice Event emitted when a new token term is added.
-    /// @dev Event emitted when a new token term is added.
-    /// @param _term is the term being added to the contract.
-    /// @param _templateId is the token id of the token for which the term is being added.
-    /// @param _value is the value of the term being added to the contract.
-    event TermChanged(uint256 indexed _templateId, string _term, string _value);
+    // /// @notice Event emitted when a new token term is added.
+    // /// @dev Event emitted when a new token term is added.
+    // /// @param _term is the term being added to the contract.
+    // /// @param _templateId is the token id of the token for which the term is being added.
+    // /// @param _value is the value of the term being added to the contract.
+    // event TermChanged(uint256 indexed _templateId, string _term, string _value);
 
-    /// @notice This event is emitted when the global template is updated.
-    /// @dev This event is emitted when the global template is updated.
-    /// @param _template The new template.
-    /// @param _templateId The token id of the token for which the template is being updated.
-    event TemplateChanged(uint256 indexed _templateId, string _template);
+    // /// @notice This event is emitted when the global template is updated.
+    // /// @dev This event is emitted when the global template is updated.
+    // /// @param _template The new template.
+    // /// @param _templateId The token id of the token for which the template is being updated.
+    // event TemplateChanged(uint256 indexed _templateId, string _template);
 
-    /// @notice This event is emitted when the metadata of the template is updated.
-    /// @dev This event is emitted when the metadata of the template is updated.
-    /// @param _templateId The token id of the token for which the metadata is being updated.
-    /// @param _metadataUri The new metadata URI.
-    event MetadataUriChanged(uint256 indexed _templateId, string _metadataUri);
+    // /// @notice This event is emitted when the metadata of the template is updated.
+    // /// @dev This event is emitted when the metadata of the template is updated.
+    // /// @param _templateId The token id of the token for which the metadata is being updated.
+    // /// @param _metadataUri The new metadata URI.
+    // event MetadataUriChanged(uint256 indexed _templateId, string _metadataUri);
 
     /// @notice This event is emitted when a new template is created.
     /// @dev This event is emitted when a new template is created.
     /// @param _templateId The id of the template created.
     /// @param _template is the URI of the template created.
     /// @param _owner is the owner of the template.
-    event TemplateCreated(
-        uint256 indexed _templateId,
-        string _template,
-        address _owner
-    );
+    // event TemplateCreated(
+    //     uint256 indexed _templateId,
+    //     string _template,
+    //     address _owner
+    // );
 
     /// @notice This function returns the hash of a template id and a key.
     /// @dev This function returns the hash of a template id and a key.

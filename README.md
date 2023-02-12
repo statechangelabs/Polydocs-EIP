@@ -2,7 +2,7 @@
 eip: <to be assigned>
 title: Polydocs
 description: Immutable Document Signing on the Blockchain
-author: Ray Deck ([@rhdeck](https://github.com/rhdeck)), Akshay Rakheja ([@akshay-rakheja](https://github.com/akshay-rakheja))
+author: Akshay Rakheja ([@akshay-rakheja](https://github.com/akshay-rakheja)), Ray Deck ([@rhdeck](https://github.com/rhdeck))
 discussions-to: https://github.com/statechangelabs/Polydocs/issues
 status: Draft
 type: Standards Track
@@ -30,7 +30,7 @@ Enter Polydocs: We have created a smart document and added meta-signing that mak
 - Communities need agreement on government by norms and rules.
 - KYC/AML documents that need to be signed by both parties.
 
-## Motivation (Optional)
+## Motivation
 
 Smart contracts are increasingly used for managing the allocation of digital assets. These assets are more complex than the cash or deeds we sometimes use for analogies. Intellectual property involves rights and responsibilities. Financial instruments require acceptance on both sides. Communities need agreement on government by norms and rules.
 
@@ -217,25 +217,6 @@ interface IRegistry {
         string memory _key,
         string memory _value
     ) external;
-
-    /// @notice This is an external function to create a new template.
-    /// @dev This is an external function to create a new template. It creates it on behalf of the caller and returns the template id.
-    /// @param _templateUri is the URI of the template.
-    /// @return templateId is the id of the template created.
-    function mintTemplate(
-        string memory _templateUri
-    ) external returns (uint256);
-
-    /// @notice This is an external function to create a new template that can only be called by a meta signer.
-    /// @dev This is an external function to create a new template that can only be called by a meta signer.
-    /// @dev It creates it on behalf of the caller and returns the template id.
-    /// @param _templateUri is the URI of the template.
-    /// @param _owner is the address of the owner of the template.
-    /// @return templateId is the id of the template created.
-    function mintTemplate(
-        string memory _templateUri,
-        address _owner
-    ) external returns (uint256);
 }
 
 ```
@@ -250,11 +231,11 @@ Suddenly, financial organizations, with access to a ton of capital, have the com
 
 By creating a framework to sign smart documents and demystify smart contracts, Polydocs can help bridge the gap between traditional industries and crypto ecosystem.
 
-## Backwards Compatibility (Optional)
+## Backwards Compatibility
 
 Function names are all distinct from existing ERC standards as of February 8th, 2023.
 
-## Reference Implementation (Optional)
+## Reference Implementation
 
 [gmSign](https://admin.gmsign.xyz/) was built during HelloSign Hackathon in 2022. It lets you mint NFT's with "Can't Be Evil" licenses from a16z. gmSign connects HelloSign with decentralized applications by enabling signatures over the HelloSign API which, on callback, makes a gasless record of that signature on-chain so that there is clarity as to who signed which agreement when. This record of sign is maintained by Polydocs in a public registry of signed documents.
 
@@ -264,7 +245,9 @@ Function names are all distinct from existing ERC standards as of February 8th, 
 - [Admin App](https://admin.polydocs.xyz) is a gasless admin system for creating, deploying and managing contracts with polydocs agreements. 
 - A known templates registry of documents hosted on IPFS.
 
-## Security and Implementation Considerations (Required)
+An exmaple implementation of Polydocs can be found [here](hardhat_project/contracts/Registry.sol). As in the case of EIP-721, implementation of minting templates is left to the discretion of the developer. Our Registry.sol contract is an example implementation of a registry of templates.
+
+## Security and Implementation Considerations
 
 ### Legal meaning of wallet based signatures
 

@@ -174,23 +174,4 @@ interface IRegistry {
         string memory _key,
         string memory _value
     ) external;
-
-    /// @notice This is an external function to create a new template.
-    /// @dev This is an external function to create a new template. It creates it on behalf of the caller and returns the template id.
-    /// @param _templateUri is the URI of the template.
-    /// @return templateId is the id of the template created.
-    function mintTemplate(
-        string memory _templateUri
-    ) external returns (uint256);
-
-    /// @notice This is an external function to create a new template that can only be called by a meta signer.
-    /// @dev This is an external function to create a new template that can only be called by a meta signer.
-    /// @dev It creates it on behalf of the caller and returns the template id.
-    /// @param _templateUri is the URI of the template.
-    /// @param _owner is the address of the owner of the template.
-    /// @return templateId is the id of the template created.
-    function mintTemplate(
-        string memory _templateUri,
-        address _owner
-    ) external returns (uint256);
 }
