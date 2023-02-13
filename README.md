@@ -1,14 +1,14 @@
 ---
-eip: <to be assigned>
-title: Polydocs
+eip: 6498
+title: Document signing for smart contracts
 description: Immutable Document Signing on the Blockchain
-author: Akshay Rakheja ([@akshay-rakheja](https://github.com/akshay-rakheja)), Ray Deck ([@rhdeck](https://github.com/rhdeck))
-discussions-to: https://github.com/statechangelabs/Polydocs/issues
+author: Akshay Rakheja (@akshay-rakheja), Ray Deck (@rhdeck)
+discussions-to: https://ethereum-magicians.org/t/eip-6498-document-signatures/12912
 status: Draft
 type: Standards Track
-category (*only required for Standards Track): ERC
-created: 2023-2-08
-requires (optional): 165
+category: ERC
+created: 2023-02-12
+requires: 165
 ---
 
 ## Abstract
@@ -237,17 +237,17 @@ Function names are all distinct from existing ERC standards as of February 8th, 
 
 ## Reference Implementation
 
-[gmSign](https://admin.gmsign.xyz/) was built during HelloSign Hackathon in 2022. It lets you mint NFT's with "Can't Be Evil" licenses from a16z. gmSign connects HelloSign with decentralized applications by enabling signatures over the HelloSign API which, on callback, makes a gasless record of that signature on-chain so that there is clarity as to who signed which agreement when. This record of sign is maintained by Polydocs in a public registry of signed documents.
+gmSign was built during HelloSign Hackathon in 2022. It lets you mint NFT's with "Can't Be Evil" licenses from a16z. gmSign connects HelloSign with decentralized applications by enabling signatures over the HelloSign API which, on callback, makes a gasless record of that signature on-chain so that there is clarity as to who signed which agreement when. This record of sign is maintained by Polydocs in a public registry of signed documents.
 
-[Polydocs](https://polydocs.xyz/) was built during HackFS and Polygon's Buidl It Hackathons in 2022. It comprises of 3 core parts:
+Polydocs  was built during HackFS and Polygon's Buidl It Hackathons in 2022. It comprises of 3 core parts:
 
-- [Signing App](https://sign.polydocs.xyz) is a gasless mini-app to enable a customer to accept the terms of an agreement and get recorded on the blockchain using a metatransaction.
-- [Admin App](https://admin.polydocs.xyz) is a gasless admin system for creating, deploying and managing contracts with polydocs agreements. 
+- Signing App is a gasless mini-app to enable a customer to accept the terms of an agreement and get recorded on the blockchain using a metatransaction.
+- Admin App is a gasless admin system for creating, deploying and managing contracts with polydocs agreements.
 - A known templates registry of documents hosted on IPFS.
 
-An exmaple implementation of Polydocs can be found [here](hardhat_project/contracts/Registry.sol). As in the case of EIP-721, implementation of minting templates is left to the discretion of the developer. Our Registry.sol contract is an example implementation of a registry of templates.
+As in the case of 721, implementation of minting templates is left to the discretion of the developer. Our Registry.sol contract is an example implementation of a registry of templates.
 
-## Security and Implementation Considerations
+## Security Considerations
 
 ### Legal meaning of wallet based signatures
 
@@ -262,4 +262,4 @@ There is an interesting opportunity for people who are public about their Wallet
 
 ## Copyright
 
-Copyright and related rights waived via [CC0](https://creativecommons.org/publicdomain/zero/1.0/).
+Copyright and related rights waived via [CC0](../LICENSE.md).
